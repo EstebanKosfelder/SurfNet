@@ -12,6 +12,13 @@ SkeletonStructure skeletonStructure = new SkeletonStructure(null);
  var builder =  skeletonStructure.kt;
 
 
+DebugLog.SendWarning = (s) =>
+{
+    var a = Console.ForegroundColor;
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine(s);
+    Console.ForegroundColor = a;
+};
 
 var polys = KineticTriangulation.CargarListaVector2("F:\\trabajos\\g_test.json");
 
