@@ -20,6 +20,12 @@ DebugLog.SendWarning = (s) =>
     Console.ForegroundColor = a;
 };
 
+DebugLog.SendMessage = (s) =>
+{
+    Console.WriteLine(s);
+ 
+};
+
 var polys = KineticTriangulation.CargarListaVector2("F:\\trabajos\\g_test.json");
 
 foreach (var poly in polys)

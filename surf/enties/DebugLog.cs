@@ -1,6 +1,6 @@
-﻿//#if GODOT
+﻿#if GODOT
 using Godot;
-//#endif
+#endif
 using System.Diagnostics;
 
 namespace SurfNet
@@ -24,7 +24,7 @@ namespace SurfNet
         public static void assert(string message)
         {
             string text = $"{message}";
-            GD.PushWarning(text);
+          
             SendWarning?.Invoke(text);
 
         }
@@ -60,7 +60,7 @@ namespace SurfNet
                     {
                         //#if GODOT
                         string text = $"{methodName}:l{lineNumber}:{line}:{message}";
-                        GD.PushWarning(text);
+                       
                         SendWarning?.Invoke(text);
                     }
 
