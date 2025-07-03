@@ -16,9 +16,9 @@ namespace SurfNet
 
 
         internal int HeIDs = 0;
-        private DcelMesh input;
+       
 
-
+    
 
         public bool IsIntialRefineTriangleDoit { get; set; }=false;
 
@@ -106,7 +106,11 @@ namespace SurfNet
             lPrevVertex.NextInLAV = lFirstVertex;
 
 
-
+            foreach (var curr in ContourVertices.Skip(polygon.StartIndex))
+            {
+                curr.AngleType= GetAngleType( curr.PrevInLAV.Point,curr.Point,curr.NextInLAV.Point);
+            }
+            
 
 
 
@@ -154,9 +158,11 @@ namespace SurfNet
             public KineticTriangle? N;
 
         }
-
+        
         public void BuildKineticTriangles(IMesh mesh)
         {
+
+
 
             IEnumerable<(int a, int b)[]> EnumerateTriangules(IMesh mesh)
             {
@@ -172,7 +178,7 @@ namespace SurfNet
                     ii++;
                     tri.tri = t;
                     tri.orient = 0;
-                    Console.Write($"Tri\t {ii} \t{tri.tri.id}\t");
+                  
                     (int a, int b)[] segments = new (int a, int b)[3];
                     for (int i = 0; i < 3; i++)
                     {
@@ -210,6 +216,10 @@ namespace SurfNet
                     yield return segments;
                 }
             }
+
+
+
+       
 
             this.triangles = new List<KineticTriangle>(mesh.Triangles.Count);
 
@@ -362,12 +372,15 @@ namespace SurfNet
         public Point2 BottomRight { get; private set; }
 
 
-
+      public void Trangulate(BasicInput input)
+        {
+            input.Triangulate(Triangulate(), ContourVertices);
+        }
         public void Initialize()
         {
             foreach (var cv in ContourVertices)
             {
-                DebugLog.Log($"cv.id={cv.ID}");
+            
                 var wavefront_edge = new WavefrontEdge(cv.Point, cv.NextInLAV.Point, 1, null, null);
                 //assert(wavefront_edge.id == cv.ID);
                 wavefront_edges.Add(wavefront_edge);
@@ -384,7 +397,7 @@ namespace SurfNet
             }
             foreach (var cv in ContourVertices)
             {
-                DebugLog.Log($"cv.id={cv.ID}");
+               
 
                 var wavefront_edge = this.wavefront_edges[cv.ID];
 
@@ -392,8 +405,23 @@ namespace SurfNet
                 wavefront_edge.set_wavefrontedge_vertex(1, this.vertices[cv.NextInLAV.ID]);
                 wavefront_edge.set_initial_vertices();
             }
+            var mesh = Triangulate();
+            BuildKineticTriangles(mesh);
+           // BasicInput.Triangulate(mesh,ContourVertices );
 
-            BuildKineticTriangles(Triangulate());
+            //foreach(var t in triangles)
+            //{
+            //    var bt = BasicInput.Triangles[t.Id];
+            //    assert(bt != null);
+            //    for(int i = 0; i < 3; i++)
+            //    {
+            //        assert((bt.Vertices[i] == null && t.vertex(i) == null) || bt.Vertices[i]?.Id == t.vertex(i)?.Id);
+            //        assert((bt.Neighbors[i] ==null && t.neighbor(i)==null)||  bt.Neighbors[i]?.Id == t.neighbor(i)?.Id );
+
+            //    }
+            //}
+
+
             tidx_in_check_refinement = new bool[triangles.Count];
             assert_valid(0, CORE_ZERO);
             initialized = true;

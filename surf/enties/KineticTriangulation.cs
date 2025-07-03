@@ -9,7 +9,7 @@ namespace SurfNet
     using static DebugLog;
     using static Mathex;
     using TriangleList = List<KineticTriangle>;
-    using TriangleOriginalVertexIndexList = List<int>;
+ 
 
 
     public partial class KineticTriangulation
@@ -41,6 +41,9 @@ namespace SurfNet
 
             private int v_in_t_idx_;
 
+
+
+
             private KineticTriangle next_triangle(int[] direction)
             {
                 assert(v_in_t_idx_ < 3);
@@ -67,13 +70,17 @@ namespace SurfNet
                 return this;
             }
 
+            public bool IsEnd => t_ == null && v_in_t_idx_ == 0;
+
             private AroundVertexIterator most_dir(int[] direction)
             {
-                AroundVertexIterator res = this;
+                var  res = this;
+                var t = res.t_;
                 while (res.next_triangle(direction) != null)
                 {
                     res.walk_dir(direction);
-                    assert(res != this);
+                    assert(res.t_ != t);
+                   
                 }
                 return res;
             }
@@ -84,6 +91,12 @@ namespace SurfNet
                 t_ = t;
                 v_in_t_idx_ = v_in_t_idx;
                 assert(v_in_t_idx < 3);
+            }
+
+           public  AroundVertexIterator Copy()
+            {
+                return new AroundVertexIterator(t_, v_in_t_idx_);
+            
             }
 
             public KineticTriangle next_triangle_cw()
@@ -103,24 +116,26 @@ namespace SurfNet
 
             public AroundVertexIterator walk_dir_cw => walk_dir(TriangulationUtils._cw);
             public AroundVertexIterator walk_dir_ccw => walk_dir(TriangulationUtils._ccw);
-            public static bool operator ==(AroundVertexIterator me, AroundVertexIterator other)
-            {
-                return me.t_ == other.t_ && me.v_in_t_idx_ == other.v_in_t_idx_;
-            }
+            //public static bool operator ==(AroundVertexIterator me, AroundVertexIterator other)
+            //{
+            //    return me.t_ == other.t_ && me.v_in_t_idx_ == other.v_in_t_idx_;
+            //}
 
-            public static bool operator !=(AroundVertexIterator me, AroundVertexIterator other)
-            {
-                return !(me == other);
-            }
+            //public static bool operator !=(AroundVertexIterator me, AroundVertexIterator other)
+            //{
+            //    return !(me == other);
+            //}
 
-            public static implicit operator KineticTriangle(AroundVertexIterator me)
-            { return me.t_; }
+            //public static implicit operator KineticTriangle(AroundVertexIterator me)
+            //{ return me.t_; }
 
             public KineticTriangle t()
             { return t_; }
 
             public int v_in_t_idx()
             { return v_in_t_idx_; }
+
+           
         };
 
         //friend std.ostream & operator <<(std.ostream& os, const KineticTriangulation.AroundVertexIterator it);
@@ -146,7 +161,7 @@ namespace SurfNet
          * halfedges and, where requred (beveling), also new faces.
          * Here we also create vertices.
          */
-        private SkeletonDCEL skeleton;
+        private SkeletonDCEL skeleton=new SkeletonDCEL();
 
         public EventQueue queue;
 
@@ -162,7 +177,7 @@ namespace SurfNet
           WavefrontEdge new_e,
           WavefrontVertex new_v);
 
-        private partial void create_bevels_at_vertex(DcelMesh mesh, KineticTriangle t, int i);
+    
 
         private static partial int get_basic_vertex_idx_from_triangle_vertex_indices(
             BasicInput input,
@@ -189,9 +204,7 @@ namespace SurfNet
 
         //internal partial void create_supporting_lines(DcelMesh mesh);
 
-        private partial void create_kinetic_vertices(DcelMesh mesh);
-
-        private partial void create_bevels(DcelMesh mesh);
+        
 
         private partial void store_initial_wavefront_vertices();
 
@@ -635,17 +648,11 @@ namespace SurfNet
             return new AroundVertexIterator(t, v_in_t);
         }
 
-        private AroundVertexIterator incident_faces_end()
-        { return new AroundVertexIterator(); }
+      
 
         public KineticTriangulation() { }
 
-        public partial void initialize(
-            DcelMesh mesh,
-
-          WavefrontEdgeList p_wavefront_edges,
-          int p_restrict_component = -1
-          );
+       
 
         public partial void assert_valid();
 
@@ -812,14 +819,14 @@ namespace SurfNet
                 int affected_triangles = 0;
 
                 //DBG(//DBG_KT_EVENT) << "updating vertex in affected triangles";
-                AroundVertexIterator end = incident_faces_end();
+              
                 AroundVertexIterator i = incident_faces_iterator(t, ccw(edge_idx));
                 bool first = true;
                 KineticTriangle ti;
                 //DBG(//DBG_KT_EVENT) << " ccw:";
-                for (i.prev(); i != end; i.prev())
+                for (i.prev(); !i.IsEnd; i.prev())
                 {
-                    ti = i;
+                    ti = i.t();
 
                     assert(!first || na == ti);
                     first = false;
@@ -832,9 +839,9 @@ namespace SurfNet
                 i = incident_faces_iterator(t, cw(edge_idx));
                 first = true;
                 //DBG(//DBG_KT_EVENT) << " cw:";
-                for (i.next(); i != end; i.next())
+                for (i.next(); !i.IsEnd; i.next())
                 {
-                    ti = i;
+                    ti = i.t();
                     assert(!first || nb == ti);
                     first = false;
                     ti.set_vertex(i.v_in_t_idx(), v);
@@ -1080,11 +1087,10 @@ namespace SurfNet
             {
                 int affected_triangles = 0;
 
-                AroundVertexIterator end = incident_faces_end();
                 AroundVertexIterator i = incident_faces_iterator(t, edge_idx);
                 KineticTriangle lasta = null;
                 //DBG(//DBG_KT_EVENT2) << " split: updating vertex on a side:";
-                for (i.next(); i != end; i.next())
+                for (i.next(); !i.IsEnd; i.next())
                 {
                     var ti = i.t();
                    
@@ -1101,7 +1107,7 @@ namespace SurfNet
                 i = incident_faces_iterator(t, edge_idx);
                 KineticTriangle? lastb = null;
                 //DBG(//DBG_KT_EVENT2) << " split: updating vertex on b side: ";
-                for (i.prev(); i != end; i.prev())
+                for (i.prev(); !i.IsEnd; i.prev())
                 {
                     //DBG(//DBG_KT_EVENT2) << " split:   updating vertex on b side in " << &*i;
                     var ti = i.t();

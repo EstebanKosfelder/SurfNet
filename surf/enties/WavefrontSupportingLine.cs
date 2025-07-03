@@ -5,6 +5,11 @@
     {
         // private  using Transformation = SurfNet.Aff_transformation_2<Kernel>;
 
+        public override string ToString()
+        {
+            return $" nu:{normal_unit} l:{l} ";
+        }
+
         public Line2 l;
 
         public double weight;

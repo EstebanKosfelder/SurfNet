@@ -19,6 +19,8 @@ namespace SurfNet
 
         protected T?[] array;
 
+        public T?[] Array => array;
+
         public T? this[int index]
         {
             get

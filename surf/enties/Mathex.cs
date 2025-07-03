@@ -445,6 +445,15 @@
 
         public static int sign(FT vaule, FT eps = EPS) => is_zero(vaule) ? 0 : Math.Sign(vaule);
 
+        public static EAngle GetAngleType(Point2 p, Point2 q, Point2 r)
+        {
+            var d1  = q - p;
+            var d2 =  r - p;
+
+
+            // Producto cruzado 2D
+            return (EAngle) compare(  d1.X * d2.Y, d1.Y * d2.X);
+        }
         public static int sign_of_determinant(FT a00, FT a01, FT a10, FT a11)
         {
             return compare((a00 * a11), (a10 * a01));

@@ -28,6 +28,11 @@
     public partial class WavefrontEdge
     {
 
+        public override string ToString()
+        {
+            return $" we{Id:##0} {vertices[0]?.Id:##0}->{vertices[1]?.Id:##0} {supporting_line} ";
+        }
+
         private static int wavefront_edge_ctr;
         public readonly int Id;
 

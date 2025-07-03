@@ -36,7 +36,7 @@ foreach (var poly in polys)
 
 
 
-builder.Initialize();
+skeletonStructure.initialize();
 
 
 

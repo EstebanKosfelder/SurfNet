@@ -1353,7 +1353,7 @@ determine_split_or_flip_bounded_constrained_1(double collapse_time, int c_idx){
          * Then after the flipping, this triangle will be v, o, v2,
          * and the neighbor will be o, v, v1.
          */
-        private partial void do_raw_flip_inner(int egde_idx)
+        public void do_raw_flip_inner(int egde_idx)
         { // {{{
           //DBG_FUNC_BEGIN(//DBG_TRIANGLE | //DBG_TRIANGLE_FLIP);
           //DBG(//DBG_TRIANGLE | //DBG_TRIANGLE_FLIP) << this;
@@ -1427,7 +1427,7 @@ determine_split_or_flip_bounded_constrained_1(double collapse_time, int c_idx){
          * Run do_raw_flip_inner() and asserts validity after
          * and invalidates collapse specs.
          */
-        internal partial void do_raw_flip(int edge_idx)
+        internal  void do_raw_flip(int edge_idx)
         { // {{{
           //DBG_FUNC_BEGIN(//DBG_TRIANGLE | //DBG_TRIANGLE_FLIP);
             KineticTriangle n = neighbors[edge_idx];

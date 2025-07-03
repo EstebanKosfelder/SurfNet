@@ -12,7 +12,7 @@
            Point2 pos_zero,
            WavefrontEdge a,
            WavefrontEdge b,
-           bool is_beveling
+           bool is_beveling =false
          )
         {
             assert(a.l().l.has_on(pos_zero));

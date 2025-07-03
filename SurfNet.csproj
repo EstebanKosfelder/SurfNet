@@ -8,10 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="surf\enties\BasicTriangulation.cs" />
     <Compile Remove="surf\enties\DCELBase.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="surf\enties\BasicDCEL\BasicTriangulation.cs" />
     <None Include="surf\enties\DCELBase.cs" />
   </ItemGroup>
 

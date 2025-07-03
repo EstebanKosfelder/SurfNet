@@ -1,5 +1,6 @@
 ﻿namespace SurfNet
 {
+    using TriangleNet;
     using static DebugLog;
 
 
@@ -7,13 +8,13 @@
 
     public partial class SkeletonStructure
     {
-        public DcelMesh input;
+        public BasicInput input;
         public WavefrontEdgeList wavefront_edges;
         public KineticTriangulation kt;
 
         public WavefrontPropagator wp;
 
-        public SkeletonStructure(DcelMesh input_ = null)
+        public SkeletonStructure(BasicInput input_ = null)
         {
             input = input_;
             wavefront_edges = new WavefrontEdgeList();
@@ -25,13 +26,20 @@
 
         public void initialize(int restrict_component = -1)
         {
+            if (input == null)
+            {
+                input = new BasicInput();
+                kt.Trangulate(input);
+            }
+          
+
             kt.initialize(input, wavefront_edges, restrict_component);
             assert(kt.triangles_size() > 0);
             wp.setup_queue(kt);
         }
 
 
-        public DcelMesh get_input() => input;
+        public BasicInput  get_input() => input;
 
         public KineticTriangulation get_kt() => kt;
 

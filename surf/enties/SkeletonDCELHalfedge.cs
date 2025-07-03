@@ -26,31 +26,32 @@ public class SkeletonDCELHalfedge
         private static int ctr;
         public int id;
 
+        public SkeletonDCELCbb OutCbb { get; set; }
 
+        public SkeletonDCELVertex Vertex { get; set; }
+
+        public SkeletonDCELHalfedge Prev { get; set; }
+        public SkeletonDCELHalfedge Next { get; set; }
 
         public bool is_on_outer_ccb()
         {
-            throw new NotImplementedException();
+            return OutCbb != null;
         }
 
-        public SkeletonDCELHalfedge next()
-        {
-            throw new NotImplementedException();
-        }
-
+     
         public  SkeletonDCELCbb outer_ccb()
         {
-            throw new NotImplementedException();
+           return OutCbb;
         }
 
         public  void set_outer_ccb(SkeletonDCELCbb ccb)
         {
-            throw new NotImplementedException();
+           OutCbb = ccb;
         }
 
         public SkeletonDCELVertex vertex()
         {
-            throw new NotImplementedException();
+            return Vertex;
         }
 
         public void set_curve(X_monotone_curve p)
@@ -65,29 +66,41 @@ public class SkeletonDCELHalfedge
             throw new NotImplementedException();
         }
 
+        public SkeletonDCELHalfedge Opposite { get; set; }
+
         internal SkeletonDCELHalfedge opposite()
         {
-            throw new NotImplementedException();
+            return Opposite;
         }
 
         internal void set_vertex(SkeletonDCELVertex new_v)
         {
-            throw new NotImplementedException();
+            Vertex = new_v;
         }
 
         internal SkeletonDCELHalfedge prev()
         {
-            throw new NotImplementedException();
+            return this.Prev;
         }
 
-        internal void set_next(SkeletonDCELHalfedge next)
+        internal SkeletonDCELHalfedge next()
         {
-            throw new NotImplementedException();
+            return this.Next;
+        }
+        public void set_prev(SkeletonDCELHalfedge he)
+        {
+            
+            this.Prev = he;
+          
+            he.Next = this;
+        }
+        internal void set_next(SkeletonDCELHalfedge he)
+        {
+            this.Next = he;
+
+            he.Prev = this;
         }
 
-        internal void set_prev(SkeletonDCELHalfedge prev_he)
-        {
-            throw new NotImplementedException();
-        }
+       
     }
 }

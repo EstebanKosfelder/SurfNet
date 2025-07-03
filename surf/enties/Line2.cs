@@ -5,6 +5,11 @@ namespace SurfNet
 {
     public struct Line2
     {
+
+        public override string ToString()
+        {
+            return $" a:{A} b:{B} c:{C} n:{to_vector().Normal()} ";
+        }
         public Line2(FT a, FT b, FT c) { A = a; B = b; C = c; }
 
         public Line2(Point2 start, Point2 end)
@@ -86,6 +91,17 @@ namespace SurfNet
         {
             return new Line2(-lb, la, lb * px - la * py);
         }
+        public Line2 Perpendicular(Point2 p)
+        {
+         
+            
+            return perpendicular_through_point(A,B,p.X,p.Y);
+        }
+        public bool HasOnPositiveSide(Point2 p, double epsilon = Mathex.EPS)
+        {
+            double val = A * p.X + B * p.Y + C;
+            return val > epsilon; // Valor positivo → lado positivo
+        }
 
         private static bool equal_lineC2(FT l1a, FT l1b, FT l1c, FT l2a, FT l2b, FT l2c)
         {
@@ -119,5 +135,12 @@ namespace SurfNet
             if ( is_vertical() ) return new Point2(-C / A, 0.0);
             return new Point2(0, -(C / B));
         }
+
+        public Line2 Opposite()
+        {
+            return new Line2(-A, -B, -C);
+        }
+    
+
     }
 } //namespace SurfNet

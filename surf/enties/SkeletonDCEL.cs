@@ -3,20 +3,27 @@
 namespace SurfNet
 {
     using System.Collections.Generic;
+    using static DebugLog;
     public class SkeletonDCEL
     {
-        public IEnumerable<SkeletonDCELHalfedge> halfedges;
+        public List<SkeletonDCELHalfedge> halfedges = new List<SkeletonDCELHalfedge>();
+
+        public List<SkeletonDCELVertex> vertices = new List<SkeletonDCELVertex>();
+
+        public List<SkeletonDCELFace> faces = new List<SkeletonDCELFace>();                // The faces container.
+        public List<SkeletonDCELCbb> out_ccbs = new List<SkeletonDCELCbb>();             // The outer CCBs.
+        private int num_v_skew;
 
         internal SkeletonDCELFace setup_new_input_edge(WavefrontEdge? buddy_wavefront)
         {
-            throw new NotImplementedException();
-            //SkeletonDCELFace face = new_face();
-            //SkeletonDCELCbb ccb = new_outer_ccb();
-            //SkeletonDCELHalfedge halfedge = null;
+            
+            SkeletonDCELFace face = new_face();
+            SkeletonDCELCbb ccb = new_outer_ccb();
+            SkeletonDCELHalfedge halfedge = null;
 
             //ccb.set_face(face);
 
-            //if (buddy_wavefront!=null)
+            //if (buddy_wavefront != null)
             //{ /* buddy wavefront already set up */
             //    halfedge = (buddy_wavefront.skeleton_face.outer_ccbs_begin()).opposite();
             //    assert(halfedge.is_on_outer_ccb());
@@ -30,37 +37,46 @@ namespace SurfNet
             //halfedge.set_outer_ccb(ccb);
 
             //face.add_outer_ccb(ccb, halfedge);
-            //return face;
+            return face;
         }
 
         internal SkeletonDCELCbb new_outer_ccb()
         {
-            throw new NotImplementedException();
+            out_ccbs.Add(new SkeletonDCELCbb());
+            return out_ccbs.Last();
         }
 
         internal SkeletonDCELFace new_face()
         {
-            throw new NotImplementedException();
+            faces.Add(new SkeletonDCELFace());
+            return faces.Last();
         }
 
         internal SkeletonDCELHalfedge new_edge()
         {
-            throw new NotImplementedException();
+           var ha = new SkeletonDCELHalfedge();
+            var hb = new SkeletonDCELHalfedge();
+            ha.Opposite = hb;
+            hb.Opposite = ha;
+            halfedges.Add(ha);
+            halfedges.Add(hb);
+            return ha;
         }
 
-        internal void set_num_v_skew(int v)
+        internal void set_num_v_skew(int skew)
         {
-            throw new NotImplementedException();
+           // assert(points.size() == 0);
+            num_v_skew = skew;
         }
 
         internal void set_number_of_points_and_curves()
         {
-            throw new NotImplementedException();
+           // throw new NotImplementedException();
         }
 
         internal X_monotone_curve new_segment(Segment_3 segment_3)
         {
-            throw new NotImplementedException();
+           return new X_monotone_curve();
         }
 
         internal SkeletonDCELHalfedge halfedges_begin()
@@ -75,22 +91,23 @@ namespace SurfNet
 
         internal void assert_sane()
         {
-            throw new NotImplementedException();
+           // throw new NotImplementedException();
         }
 
         internal X_monotone_curve new_ray(Ray3 ray_3)
         {
-            throw new NotImplementedException();
+            return new X_monotone_curve();
         }
 
         internal SkeletonDCELVertex new_vertex()
         {
-            throw new NotImplementedException();
+            vertices.Add(new SkeletonDCELVertex());
+            return vertices.Last();
         }
 
         internal Point_3 new_point(Point_3 point_3)
         {
-            throw new NotImplementedException();
+            return point_3;
         }
     }
 
@@ -117,17 +134,17 @@ namespace SurfNet
 
         internal void add_outer_ccb(SurfNet.SkeletonDCELCbb ccb, SurfNet.SkeletonDCELHalfedge halfedge)
         {
-            throw new NotImplementedException();
+        // TODO       throw new NotImplementedException();
         }
 
         public  SkeletonDCELHalfedge outer_ccbs_begin()
         {
-            throw new NotImplementedException();
+            return null;// throw new NotImplementedException();
         }
 
         internal SkeletonDCELHalfedge outer_ccbs_end()
         {
-            throw new NotImplementedException();
+            return null;// throw new NotImplementedException();
         }
     }
 

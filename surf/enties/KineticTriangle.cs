@@ -302,9 +302,9 @@
             e.set_incident_triangle(this);
         } // }}}
 
-        private partial void do_raw_flip_inner(int egde_idx);
+        
 
-        internal partial void do_raw_flip(int edge_idx);
+
 
         public bool is_dead() => is_dead_;
 

@@ -3,9 +3,10 @@ namespace SurfNet
 {
     public class SkeletonDCELCbb
     {
+        SkeletonDCELFace Face { get; set; }
         public  void set_face(SkeletonDCELFace face)
         {
-            throw new NotImplementedException();
+            Face = face;
         }
     }
 }

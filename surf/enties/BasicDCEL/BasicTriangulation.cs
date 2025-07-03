@@ -1,9 +1,11 @@
 ﻿
+using System;
 using TriangleNet.Topology.DCEL;
 
 namespace SurfNet
 {
 
+    
 
     public struct BasicVertexInfo
     {
@@ -194,87 +196,85 @@ namespace SurfNet
         //        DBG_FUNC_END(DBG_INPUT);
         //    }
 
-        //    void
-        //    BasicTriangulation::
-        //initialize(const BasicInput& input)
-        //    {
-        //        DBG_FUNC_BEGIN(DBG_INPUT);
-        //        std::vector<Vertex_handle> ct_vertex_handles;
-        //        ct_vertex_handles.reserve(input.vertices().size());
+//        public void initialize(BasicInput input)
+//            {
+//               // DBG_FUNC_BEGIN(DBG_INPUT);
+//        std::vector<Vertex_handle> ct_vertex_handles;
+//        ct_vertex_handles.reserve(input.vertices().size());
 
-        //        /* Insert vertices.
-        //         *
-        //         * We store the handle of an incident face of the previously inserted vertex.
-        //         * We use this as a location hint, on the assumption that vertex insert order
-        //         * is somewhat spacially ordered.  This is only a hint to the CDT inserter.
-        //         */
-        //        if (input.vertices().size() == 0)
-        //        {
-        //            LOG(ERROR) << "Invalid input: no vertices.";
-        //            exit(EXIT_INVALID_INPUT);
-        //        }
-        //        Face_handle prev_fh = NULL;
-        //        for (size_t i = 0; i < input.vertices().size(); ++i)
-        //        {
-        //            const auto p = input.vertices()[i];
-        //            auto vh = insert(p.p, prev_fh);
-        //            vh->info().original_vertex_idx = i;
-        //            prev_fh = incident_faces(vh);
-        //            ct_vertex_handles.push_back(vh);
-        //        }
-        //        if (number_of_vertices() != input.vertices().size())
-        //        {
-        //            LOG(ERROR) << "Inserted only " << number_of_vertices() << " out of " << input.vertices().size() << " vertices.  Are the incident vertices?";
-        //            exit(EXIT_INVALID_INPUT);
-        //        }
-        //        if (input.edges().size() == 0)
-        //        {
-        //            LOG(ERROR) << "Invalid input: no edges.";
-        //            exit(EXIT_INVALID_INPUT);
-        //        }
-        //        /* Insert constraints.
-        //         *
-        //         * We insert constraints by providing the proper vertex handles from the CDT.
-        //         * This provides a speedup of about 5 compared to adding the constraints by
-        //         * coordinates.
-        //         */
-        //        for (const auto e : input.edges()) {
-        //            if (ct_vertex_handles[e.u] == ct_vertex_handles[e.v])
-        //            {
-        //                LOG(ERROR) << "Invalid input: Edge (" << e.u << ", " << e.v << ") is a loop.";
-        //                exit(EXIT_INVALID_INPUT);
-        //            }
-        //# ifdef HAVE_INTERSECTION_OF_CONSTRAINTS_EXCEPTION
-        //            try
-        //            {
-        //#endif
-        //                insert_constraint(ct_vertex_handles[e.u], ct_vertex_handles[e.v]);
-        //# ifdef HAVE_INTERSECTION_OF_CONSTRAINTS_EXCEPTION
-        //            }
-        //            catch (Intersection_of_constraints_exception&err) {
-        //                LOG(ERROR) << "Invalid input: Inserting edge (" << e.u << ", " << e.v << ") causes an intersection of constraints.";
-        //                exit(EXIT_INVALID_INPUT);
-        //            }
-        //#else
-        //#warning "Old CGAL version without Intersection_of_constraints_exception.  We will not detect some classes of invalid input."
-        //#endif
-        //            }
+//                /* Insert vertices.
+//                 *
+//                 * We store the handle of an incident face of the previously inserted vertex.
+//                 * We use this as a location hint, on the assumption that vertex insert order
+//                 * is somewhat spacially ordered.  This is only a hint to the CDT inserter.
+//                 */
+//                if (input.vertices().size() == 0)
+//                {
+//                    LOG(ERROR) << "Invalid input: no vertices.";
+//                    exit(EXIT_INVALID_INPUT);
+//                }
+//                Face_handle prev_fh = NULL;
+//                for (size_t i = 0; i<input.vertices().size(); ++i)
+//                {
+//                    const auto p = input.vertices()[i];
+//                auto vh = insert(p.p, prev_fh);
+//    vh->info().original_vertex_idx = i;
+//                    prev_fh = incident_faces(vh);
+//    ct_vertex_handles.push_back(vh);
+//                }
+//if (number_of_vertices() != input.vertices().size())
+//{
+//    LOG(ERROR) << "Inserted only " << number_of_vertices() << " out of " << input.vertices().size() << " vertices.  Are the incident vertices?";
+//    exit(EXIT_INVALID_INPUT);
+//}
+//if (input.edges().size() == 0)
+//{
+//    LOG(ERROR) << "Invalid input: no edges.";
+//    exit(EXIT_INVALID_INPUT);
+//}
+///* Insert constraints.
+// *
+// * We insert constraints by providing the proper vertex handles from the CDT.
+// * This provides a speedup of about 5 compared to adding the constraints by
+// * coordinates.
+// */
+//for (const auto e : input.edges()) {
+//    if (ct_vertex_handles[e.u] == ct_vertex_handles[e.v])
+//    {
+//        LOG(ERROR) << "Invalid input: Edge (" << e.u << ", " << e.v << ") is a loop.";
+//        exit(EXIT_INVALID_INPUT);
+//    }
+//# ifdef HAVE_INTERSECTION_OF_CONSTRAINTS_EXCEPTION
+//    try
+//    {
+//#endif
+//        insert_constraint(ct_vertex_handles[e.u], ct_vertex_handles[e.v]);
+//# ifdef HAVE_INTERSECTION_OF_CONSTRAINTS_EXCEPTION
+//    }
+//    catch (Intersection_of_constraints_exception&err) {
+//        LOG(ERROR) << "Invalid input: Inserting edge (" << e.u << ", " << e.v << ") causes an intersection of constraints.";
+//        exit(EXIT_INVALID_INPUT);
+//    }
+//#else
+//#warning "Old CGAL version without Intersection_of_constraints_exception.  We will not detect some classes of invalid input."
+//#endif
+//    }
 
-        //            DBG(DBG_INPUT) << "Input has dimension " << dimension();
-        //            DBG(DBG_INPUT) << "Have " << number_of_faces() << " finite faces";
-        //            if (dimension() <= 1)
-        //            {
-        //                LOG(ERROR) << "Cannot handle input of dimension less than 2.";
-        //                exit(EXIT_INVALID_INPUT);
-        //            }
-        //            assert(number_of_faces() > 0);
-        //            tag_components(ct_vertex_handles[input.edges()[0].u], ct_vertex_handles[input.edges()[0].v]);
+//    DBG(DBG_INPUT) << "Input has dimension " << dimension();
+//    DBG(DBG_INPUT) << "Have " << number_of_faces() << " finite faces";
+//    if (dimension() <= 1)
+//    {
+//        LOG(ERROR) << "Cannot handle input of dimension less than 2.";
+//        exit(EXIT_INVALID_INPUT);
+//    }
+//    assert(number_of_faces() > 0);
+//    tag_components(ct_vertex_handles[input.edges()[0].u], ct_vertex_handles[input.edges()[0].v]);
 
-        //            DBG_FUNC_END(DBG_INPUT);
-        //        }
+//    DBG_FUNC_END(DBG_INPUT);
+//}
 
 
 
-        //    };
+            //};
     }
 }
