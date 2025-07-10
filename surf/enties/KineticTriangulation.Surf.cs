@@ -305,7 +305,7 @@ namespace SurfNet
                     {
                         it.t().set_vertex(it.v_in_t_idx(), v);
                         invalidate_basic_vertex_idx_in_triangle_vertex_indices(input, triangle_original_vertex_indices, it.t().Id, it.v_in_t_idx());
-                     //   Log($"  setting vertex to {v.Id} in T{it.t().Id} ({it.v_in_t_idx()})");
+                        Log($"  setting vertex to {v.Id} in T{it.t().Id} ({it.v_in_t_idx()})");
                     };
 
                     //Log($"  setting vertex 1 to {v} in {l.Id}");

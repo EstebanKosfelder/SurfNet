@@ -1,9 +1,7 @@
 ﻿
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
+
 using System.Text.Json;
-using TriangleNet.Geometry;
-using TriangleNet.Topology.DCEL;
+
 
 namespace SurfNet
 {

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 
@@ -26,13 +27,15 @@ DebugLog.SendMessage = (s) =>
  
 };
 
-var polys = KineticTriangulation.CargarListaVector2("F:\\trabajos\\g_test.json");
+// var polys = KineticTriangulation.CargarListaVector2("F:\\trabajos\\g_test.json");
+var polys = KineticTriangulation.CargarListaVector2("F:\\trabajos\\p_test.json");
 
 foreach (var poly in polys)
 {
 
     builder.EnterContour(poly.Select(p => new Point2(p.X, p.Y)));
 }
+
 
 
 
