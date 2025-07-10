@@ -43,7 +43,7 @@ namespace SurfNet
 
         public Ray2(Point2 p, Direction2 d) : this(p, d.to_vector()) { }
 
-        public Ray2(Point2 p, Line2 l) : this(p, l.to_vector()) { }
+        public Ray2(Point2 p, Line2 l) : this(p, l.ToVector()) { }
 
         public Ray2(in Ray2 r) : this(r.Source, r.SecondPoint) { }
 

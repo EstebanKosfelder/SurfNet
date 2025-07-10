@@ -1,11 +1,12 @@
 ﻿using System.Runtime.ConstrainedExecution;
+using TriangleNet.Topology.DCEL;
 
 namespace SurfNet
 {
 
 
 
-
+    using static DebugLog; 
 public class SkeletonDCELHalfedge
     {
 
@@ -30,9 +31,93 @@ public class SkeletonDCELHalfedge
 
         public SkeletonDCELVertex Vertex { get; set; }
 
-        public SkeletonDCELHalfedge Prev { get; set; }
-        public SkeletonDCELHalfedge Next { get; set; }
+     
 
+        SkeletonDCELHalfedge _next;
+        SkeletonDCELHalfedge _prev;
+
+        public SkeletonDCELHalfedge Next
+        {
+            get => _next;
+
+            set
+            {
+                if (value != null && _next!=null)
+                {
+                    DebugLog.Warning($"v{Vertex.Id}.Next != null ant:{_next.Vertex.Id}  new: {value.Vertex.Id}    ");
+                }
+                
+                _next = value;
+
+
+                if (this.Face != null && value != null && value.Face != Face)
+                {
+                    if (value.Face != null && value.Face != Face)
+                    {
+                        DebugLog.Warning($"Face != null ant:{value.Face}  new: {Face}    ");
+                    }
+
+                    value.Face = Face;
+                }
+                else if(this.Face ==null && value != null  && value.Face!=null)
+                {
+                    Face = value.Face;
+                }   
+
+                if (value != null && value.Prev!=this)
+                {
+                    value.Prev = this;
+                    
+                }
+            }
+        }
+
+        public SkeletonDCELHalfedge Prev
+        {
+            get => _prev;
+
+            set
+            {
+                if (value != null && _prev != null)
+                {
+                    DebugLog.Warning($"v{Vertex.Id}.Prev != null ant:{_prev.Vertex.Id} new: {value.Vertex.Id}    ");
+                }
+                _prev = value;
+                if (value != null && value.Next != this)
+                {
+                    value.Next = this;
+                }
+            }
+        }
+
+        public IEnumerable<SkeletonDCELHalfedge> Circulation(int max = 100000)
+        {
+            SkeletonDCELHalfedge curr = this;
+            SkeletonDCELFace face = curr.Face;
+            int i = 0;
+            if (curr == null)
+            {
+                throw new InvalidOperationException($"{this} has not Halfedge asigned");
+            }
+            do
+            {
+                yield return curr;
+                curr = curr.Next;
+
+                if (curr == null)
+                {
+                    throw new InvalidOperationException($"{this} has not Halfedge asigned");
+                }
+                if (face != curr.Face)
+                {
+      //              throw new InvalidOperationException($"{this} has not a only Face {curr}");
+                }
+                if (max < i++)
+                {
+                    throw new GFLException($" {this} iterate more than {max} "); break;
+                }
+            } while (curr != this);
+        }
         public bool is_on_outer_ccb()
         {
             return OutCbb != null;
@@ -67,6 +152,7 @@ public class SkeletonDCELHalfedge
         }
 
         public SkeletonDCELHalfedge Opposite { get; set; }
+        public SkeletonDCELFace Face { get; internal set; }
 
         internal SkeletonDCELHalfedge opposite()
         {
@@ -100,7 +186,7 @@ public class SkeletonDCELHalfedge
 
             he.Prev = this;
         }
-
+       
        
     }
 }

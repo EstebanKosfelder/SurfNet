@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,6 +25,15 @@ namespace SurfNet
             wavefront_edges = p_wavefront_edges;
             restrict_component_ = p_restrict_component;
            
+            skeleton.vertices.Capacity= input.Vertices.Count;
+
+            foreach (var bv in input.Vertices)
+            {
+                var sv = skeleton.new_vertex(bv.p, 0.0);
+            }
+
+
+
 
             //DBG(DBG_KT_SETUP) << "Input has " << ct.max_component() + 1 << " component(s): 0 .. " << ct.max_component();
             //DBG(DBG_KT_SETUP) << "Requested straight skeleton of component " << restrict_component_;
@@ -42,6 +52,35 @@ namespace SurfNet
              * create_bevels is the first that may flip things around.
              */
             create_bevels(input, triangle_original_vertex_indices);
+
+
+            
+
+            foreach (var v in vertices)
+            {
+                var sh = skeleton.new_edge();
+                var next_v = vertices[ContourVertices[v.Id].NextInLAV.ID];
+                var he_v = v.Halfedge;
+                var he_nv = next_v.Halfedge;
+                sh.Vertex =v.Vertex;
+                he_v.Opposite.Next = sh;
+                sh.Next = he_nv;
+            }
+
+            foreach (var v in vertices)
+            {
+                var contourHe = v.Halfedge.Opposite.Next;
+                var f = skeleton.new_face(v.Halfedge.Opposite.Next);
+                contourHe.Prev.Face = 
+                contourHe.Next.Face = f;
+                if (v.Halfedge.Opposite.Next.Vertex != v.Vertex)
+                {
+
+                }
+            }
+
+
+
             store_initial_wavefront_vertices();
 
             tidx_in_check_refinement = new bool[triangles.Count];
@@ -68,6 +107,8 @@ namespace SurfNet
             /** Allocate sufficient space for our arrays */
             this.vertices = new WavefrontVertexList();
             this.vertices.Capacity = (num_v + num_t);
+           
+
             triangles.Capacity = (num_t);
 
             ///   vertices.Add(WavefrontVertex.make_infinite_vertex());
@@ -186,9 +227,9 @@ namespace SurfNet
                         //    buddy_wavefront_edge = n.wavefront(idx_in_n); /* may still be null, and that's OK */
                         //}
 
-                        SkeletonDCELFace skeleton_dcel_face = skeleton.setup_new_input_edge(null /*buddy_wavefront_edge*/ /* may be NULL and that's OK */);
+                       // SkeletonDCELFace skeleton_dcel_face = skeleton.setup_new_input_edge(null /*buddy_wavefront_edge*/ /* may be NULL and that's OK */);
 
-                        wavefront_edges.Add(new WavefrontEdge(u.p, v.p, /* edge.weight*/ 1, t, skeleton_dcel_face));
+                        wavefront_edges.Add(new WavefrontEdge(u.p, v.p, /* edge.weight*/ 1, t, null));
                         w[i] = wavefront_edges.Last();
                     }
                     else
@@ -204,6 +245,10 @@ namespace SurfNet
 
         private void create_kinetic_vertices(BasicInput input, TriangleOriginalVertexIndexList triangle_original_vertex_indices)
         {
+
+            
+            this.vertices.AddRange(input.Vertices.Select(x =>(WavefrontVertex) null));
+
             ////DBG_FUNC_BEGIN(//DBG_KT_SETUP);
 
             /* We iterate over all triangles, and in each triangle over each
@@ -249,7 +294,9 @@ namespace SurfNet
                     assert(bv.degree < 1);
 
                     // XXX do not make a vertex if this is reflex and the reflex_beveling_add is greater than 1.
-                    WavefrontVertex v = vertices.make_initial_vertex(bv.p, l, r, false);
+                    WavefrontVertex v = vertices.make_initial_vertex(skeleton, bv.Id, bv.p, l, r, false);
+
+
 
                     // Should not have created a vertex that needed beveling.
                     assert(bv.reflex_beveling_add == 0 || v.is_convex_or_straight());
@@ -258,14 +305,20 @@ namespace SurfNet
                     {
                         it.t().set_vertex(it.v_in_t_idx(), v);
                         invalidate_basic_vertex_idx_in_triangle_vertex_indices(input, triangle_original_vertex_indices, it.t().Id, it.v_in_t_idx());
-                        Log($"  setting vertex to {v.Id} in T{it.t().Id} ({it.v_in_t_idx()})");
+                     //   Log($"  setting vertex to {v.Id} in T{it.t().Id} ({it.v_in_t_idx()})");
                     };
 
-                    Log($"  setting vertex 1 to {v} in {l.Id}");
-                    Log($"  setting vertex 0 to {v} in {r.Id}");
+                    //Log($"  setting vertex 1 to {v} in {l.Id}");
+                    //Log($"  setting vertex 0 to {v} in {r.Id}");
                     assert(l.vertex(1) == v);
                     assert(r.vertex(0) == v);
                 }
+            }
+            foreach (var kv in vertices)
+            {
+                var cv = ContourVertices[kv.Id];
+                kv.NextInLAV = vertices[cv.NextInLAV.ID];
+                kv.PrevInLAV = vertices[cv.PrevInLAV.ID];
             }
             //DBG_FUNC_END(//DBG_KT_SETUP);
         }
@@ -304,7 +357,7 @@ namespace SurfNet
         TriangleOriginalVertexIndexList triangle_original_vertex_indices, KineticTriangle t, int i)
 
         {
-       
+            throw new NotImplementedException();
            
             /* We should not have any triangles with undefined vertices after
              * we went past the original size.  In particular, since the
@@ -349,7 +402,7 @@ namespace SurfNet
                     }
 
                     var w = new WavefrontEdge(new WavefrontSupportingLine(l.l().l.Opposite().Perpendicular(bv.p), l.l().weight));
-                    Log($"add w:{w}");
+                    Log($"New wavefront edgew:{w}");
                     wavefront_edges.Add(w);
                     edges.push_back(w);
                     // DBG(DBG_KT_SETUP) << " New wavefront edge: " << *w;
@@ -380,8 +433,8 @@ namespace SurfNet
             //DBG(DBG_KT_SETUP) << " New wavefront vertices:";
             foreach (var  edge in edges.Skip(1))
             {
-                WavefrontVertex v = vertices.make_initial_vertex(bv.p, previous_edge, edge, true);
-                Log($"add {v}");
+                WavefrontVertex v = vertices.make_initial_vertex(skeleton, bv.Id,bv.p, previous_edge, edge, true);
+                Log($"add {v.Debug()}");
                 if (prev_vertex!=null)
                 {
                     v.link_tail_to_tail(prev_vertex);
@@ -389,7 +442,7 @@ namespace SurfNet
                 prev_vertex = v;
 
                 new_wavefront_vertices.Add(v);
-                //  DBG(DBG_KT_SETUP) << "  - " << v;
+                
                 previous_edge = edge;
             }
 
@@ -470,7 +523,7 @@ namespace SurfNet
                         // Whichever we pick, we will then have to figure out what the right way
                         // to flip is in one case or another.
 
-                // split_this = (*edge).l().l.has_on_negative_side(next_pos_t_ccw);
+                
                         split_this = !( (current_edge).l().l.HasOnPositiveSide(next_pos_t_ccw));
                         if (split_this)
                         {
@@ -550,8 +603,10 @@ namespace SurfNet
                 assert(wf.incident_triangle().has_wavefront(wf));
             }
 
+
+            var len = triangles.Count;
             //  set up bevels
-            for (var idx =0; idx < triangles.Count; idx++)
+            for (var idx =0; idx < len; idx++)
             {
                 var t_it = triangles[idx];
                 for (int i = 0; i < 3; ++i)
@@ -586,6 +641,63 @@ namespace SurfNet
                 assert(wf.incident_triangle() != null);
                 assert(wf.incident_triangle().has_wavefront(wf));
             }
+        }
+        /** return (position, is_infinite) of vertex i of triangle t.
+        *
+        * This uses the kinetic triangulation's vertex location
+        * if already set, and falls back to using the vertex
+        * position from the original, underlying, constrained triangulation.
+        *
+        * The latter only works for triangles that were created initially,
+        * not any that are the result of splits (but those should all have
+        * kinetic vertices yet).  NO, WRONG, XXX NOT GUARANTEED.
+        */
+
+        private partial (Point2, bool) get_vertex_pos(BasicInput input,
+          TriangleOriginalVertexIndexList triangle_original_vertex_indices,
+          KineticTriangle t,
+          int i
+        )
+        {
+            ////DBG_FUNC_BEGIN(//DBG_KT_SETUP);
+            //DBG_INDENT_INC();
+
+            WavefrontVertex kv = t.vertex(i);
+
+            Point2 pos = Point2.NaN;
+            bool is_inf = false;
+
+            if (kv != null)
+            {
+                //DBG(//DBG_KT_SETUP) << "  v is " << kv;
+                if (kv.is_infinite)
+                { /* we already have a vertex set at t's cw */
+                    is_inf = true;
+                }
+                else
+                {
+                    pos = kv.pos_zero;
+                }
+            }
+            else
+            {
+                //DBG(//DBG_KT_SETUP) << "  kinetic vertex is not yet set up, using vertex from input triangulation.";
+                /* The infinite vertex is associated in kinetic triangles already
+                 * in initialize_tds at the very start of setting things up.
+                 * So if we are here, it's not the infinite vertex.
+                 *
+                 * However, it may be a vertex we'll have to bevel later, so it might
+                 * still not be set in the kinetic triangulation.  In that case,
+                 * get its position from the underlying original triangulation and input.
+                 */
+                assert(t.Id < triangle_original_vertex_indices.size() / 3); // XXX -- check if this holds
+                BasicVertex bv = get_basic_vertex_from_triangle_vertex_indices(input, triangle_original_vertex_indices, t.Id, i);
+                pos = bv.p;
+            }
+
+            //DBG_INDENT_DEC();
+            ////DBG_FUNC_END(//DBG_KT_SETUP);
+            return (pos, is_inf);
         }
 
         private partial void store_initial_wavefront_vertices()

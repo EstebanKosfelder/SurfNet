@@ -14,7 +14,7 @@ namespace SurfNet
 
         public Ray3(in Point_3 sp, in Vector_3 vector) : this(sp, new Point_3(sp.X + vector.X, sp.Y + vector.Y, sp.Z + vector.Z)) { }
 
-   //     public Ray3(in Point_3 sp, in Direction2 d) : this(sp, d.to_vector()) { }
+   //     public Ray3(in Point_3 sp, in Direction2 d) : this(sp, d.ToVector()) { }
 
         public Point_3 Source;
         public Point_3 SecondPoint;
@@ -41,9 +41,9 @@ namespace SurfNet
 
         public Ray3(Point_3 p, Vector_3 v) : this(p, new Point_3(p.X + v.X, p.Y + v.Y, p.Z + v.Z)) { }
 
-        //public Ray3(Point_3 p, Direction2 d) : this(p, d.to_vector()) { }
+        //public Ray3(Point_3 p, Direction2 d) : this(p, d.ToVector()) { }
 
-        //public Ray3(Point_3 p, Line2 l) : this(p, l.to_vector()) { }
+        //public Ray3(Point_3 p, Line2 l) : this(p, l.ToVector()) { }
 
         public Ray3(in Ray3 r) : this(r.Source, r.SecondPoint) { }
 

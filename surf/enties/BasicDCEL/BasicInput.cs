@@ -52,10 +52,7 @@ namespace SurfNet
 
         }
 
-        internal List<BasicVertex> vertices()
-        {
-            throw new NotImplementedException();
-        }
+        
 
 
         public void Triangulate(IMesh mesh, List<ContourVertex> contourVertices)
@@ -111,7 +108,7 @@ namespace SurfNet
 
                         tri.orient++;
                     }
-                    Console.WriteLine();
+                    
                     yield return segments;
                 }
             }
@@ -121,6 +118,7 @@ namespace SurfNet
 
             Triangles = new List<BasicTriangle>(mesh.Triangles.Count);
             Vertices = new List<BasicVertex>(contourVertices.Count);
+           
 
             foreach (var v in contourVertices)
             {

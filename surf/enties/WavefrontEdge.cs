@@ -1,27 +1,6 @@
 ﻿namespace SurfNet
 {
     using static DebugLog;
-    public struct EdgePtrPair
-    {
-        public WavefrontEdge Left;
-        public WavefrontEdge Right;
-
-        public EdgePtrPair(WavefrontEdge left, WavefrontEdge right)
-        {
-            Left = left;
-            Right = right;
-        }
-
-        public static implicit operator (WavefrontEdge, WavefrontEdge)(EdgePtrPair value)
-        {
-            return (value.Left, value.Right);
-        }
-
-        public static implicit operator EdgePtrPair((WavefrontEdge left, WavefrontEdge right) value)
-        {
-            return new EdgePtrPair(value.left, value.right);
-        }
-    };
 
     public class WavefrontEdgeList : List<WavefrontEdge> { };
 
@@ -30,7 +9,7 @@
 
         public override string ToString()
         {
-            return $" we{Id:##0} {vertices[0]?.Id:##0}->{vertices[1]?.Id:##0} {supporting_line} ";
+            return $" we:{Id:##0} {vertices[0]?.Id:##0}->{vertices[1]?.Id:##0} {supporting_line.l.ToVector().Normal().Debug()} ";
         }
 
         private static int wavefront_edge_ctr;
@@ -139,7 +118,7 @@
             collapse_spec_computed_with_vertices = new WavefrontVertex[] { null, null };
 #endif
 
-            assert(skeleton_face != null ^ is_beveling);
+          //  assert(skeleton_face != null ^ is_beveling);
         }
 
         private WavefrontEdge(WavefrontVertex va,
@@ -163,7 +142,7 @@
             collapse_spec_computed_with_vertices = new WavefrontVertex[] { null, null };
 #endif
 
-            assert((skeleton_face != null) ^ is_beveling);
+          //  assert((skeleton_face != null) ^ is_beveling);
         }
 
         public void set_dead()

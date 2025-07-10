@@ -37,7 +37,7 @@
         {
             this.l = p_l;
             this.weight = p_weight;
-            normal_direction = l.to_vector().perpendicular(OrientationEnum.COUNTERCLOCKWISE);
+            normal_direction = l.ToVector().perpendicular(OrientationEnum.COUNTERCLOCKWISE);
             normal_unit = normal_direction / Mathex.sqrt(normal_direction.squared_length());
             normal = (normal_unit * weight);
         }

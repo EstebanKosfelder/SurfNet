@@ -24,7 +24,7 @@ namespace SurfNet
         public DcelHalfEdge next;
 
         /// <summary>
-        /// Gets or sets the half-edge id.
+        /// Gets or sets the half-edge Id.
         /// </summary>
         public int ID
         {
@@ -120,6 +120,9 @@ namespace SurfNet
         {
             throw new NotImplementedException();
         }
+
+
+      
     }
 
 

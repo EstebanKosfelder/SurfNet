@@ -107,7 +107,7 @@ std.ostream & operator <<(std.ostream& os, const CollapseType a);
 
         public override string ToString()
         {
-            return $"{type_} time:{time_} e:{(relevant_edge_ != -1 ? relevant_edge_.ToString():"")} sk:{(secondary_key_ != double.NegativeInfinity? secondary_key_.ToString():"")} ";
+            return $"{type_} time:{time_.Debug(4)} e:{(relevant_edge_ != -1 ? relevant_edge_.ToString():"")} sk:{(secondary_key_ != double.NegativeInfinity? secondary_key_.Debug(4):"")} ";
         }
 
        

@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using TriangleNet.Geometry;
 using TriangleNet.Topology.DCEL;
@@ -228,116 +229,126 @@ namespace SurfNet
 
         public  void create_remaining_skeleton_dcel()
         {
-            //   throw new NotImplementedException();
-            //DBG_FUNC_BEGIN(//DBG_SKEL);
-            assert(!finalized);
+            ////   throw new NotImplementedException();
+            ////DBG_FUNC_BEGIN(//DBG_SKEL);
+            //assert(!finalized);
 
-            /* set up halfedges */
+            ///* set up halfedges */
 
-            foreach (var v_it in vertices.Take(this.ContourVertices.Count))
-            {
-                WavefrontVertex v = v_it;
-                bool new_face;
-                SkeletonDCELFace f;
-                SkeletonDCELCbb c;
-                SkeletonDCELHalfedge @base;
-                //DBG(//DBG_SKEL) << " v: " << v;
+            //foreach (var v_it in vertices.Take(this.ContourVertices.Count))
+            //{
+            //    WavefrontVertex v = v_it;
+            //    bool new_face;
+            //    SkeletonDCELFace? f=null;
+            //    SkeletonDCELCbb? c=null;
+            //    SkeletonDCELHalfedge? @base =null;
+            //    Log($" start v:{v} ");
 
-                if (v.is_infinite) continue;
-                assert(v.is_initial);
-                if (v.is_degenerate()) continue;
+            //    if (v.is_infinite) continue;
+            //    assert(v.is_initial);
+            //    if (v.is_degenerate()) continue;
 
-                assert(!v.is_degenerate());
-                assert(v.incident_wavefront_edge(0) != null);
-                if (null != (f = v.incident_wavefront_edge(0).skeleton_face))
-                {
-                    new_face = false;
+            //    assert(!v.is_degenerate());
+            //    assert(v.incident_wavefront_edge(0) != null);
 
-                    assert(f.outer_ccbs_begin() != f.outer_ccbs_end());
-                    @base = f.outer_ccbs_begin();
-                    c = @base.outer_ccb();
-                }
-                else
-                {
-                    /* the result of beveling */
-                    new_face = true;
+            //    if (null != (f = v.incident_wavefront_edge(0).skeleton_face))
+            //    {
+            //        new_face = false;
+            //        /*TODO
+            //        assert(f.outer_ccbs_begin() != f.outer_ccbs_end());
+            //        @base = f.outer_ccbs_begin();
+            //        c = @base.outer_ccb();
+            //        */
+            //    }
+            //    else
+            //    {
+            //        // the result of beveling 
+            //        new_face = true;
+            //        /*TODO
+            //        f = skeleton.new_face();
+            //        c = skeleton.new_outer_ccb();
+            //        c.set_face(f);
+            //        @base = null;
+            //        */
+            //    };
+            //    //DBG(//DBG_SKEL) << "new_face: " << new_face;
 
-                    f = skeleton.new_face();
-                    c = skeleton.new_outer_ccb();
-                    c.set_face(f);
-                    @base = null;
-                };
-                //DBG(//DBG_SKEL) << "new_face: " << new_face;
-                SkeletonDCELHalfedge last_he = create_remaining_skeleton_dcel_one_face(v, @base, c, f);
-                if (new_face)
-                {
-                    assert(@base == null);
-                    f.add_outer_ccb(c, last_he);
-                }
-                //DBG(//DBG_SKEL) << "skeleton_face: " << *f;
-                if (@base == null)
-                {
-                    @base = f.outer_ccbs_begin();
-                }
-                //DBG(//DBG_SKEL) << "base         : " << *base;
-                for (SkeletonDCELHalfedge he = @base.next(); he != @base; he = he.next())
-                {
-                    //DBG(//DBG_SKEL) << " he        : " << *he;
-                }
-            }
-            foreach (var v_it in vertices.Skip(this.ContourVertices.Count))
-            {
-                assert(!v_it.is_initial);
-            };
+            //    SkeletonDCELHalfedge last_he = create_remaining_skeleton_dcel_one_face(v, @base, c, f);
 
-            if (restrict_component_ >= 0)
-            {
-                link_dcel_halfedges_on_ignored_side();
-            }
+            //    /* TODO
+            //    if (new_face)
+            //    {
+            //        assert(@base == null);
+            //        f.add_outer_ccb(c, last_he);
+            //    }
+            //    //DBG(//DBG_SKEL) << "skeleton_face: " << *f;
+            //    if (@base == null)
+            //    {
+            //        @base = f.outer_ccbs_begin();
+            //    }
+            //    //DBG(//DBG_SKEL) << "base         : " << *base;
+            //    for (SkeletonDCELHalfedge he = @base.next(); he != @base; he = he.next())
+            //    {
+            //        //DBG(//DBG_SKEL) << " he        : " << *he;
+            //    }
+            //    */
+            //}
+            //foreach (var v_it in vertices.Skip(this.ContourVertices.Count))
+            //{
+            //    assert(!v_it.is_initial);
+            //};
 
-            foreach (var v in vertices)
-            {
-                assert(v.is_infinite.ToInt() + v.is_degenerate().ToInt() == 1 || v.skeleton_dcel_halfedge(0) != null);
-                assert(v.is_infinite.ToInt() + v.is_degenerate().ToInt() == 1 || v.skeleton_dcel_halfedge(1) != null);
-            }
+            //if (restrict_component_ >= 0)
+            //{
+            //    /* TODO
+            //    link_dcel_halfedges_on_ignored_side();
+            //    */
+            //}
 
-            /* set up vertices */
-            bool have_infinite_vertex;
-            if (restrict_component_ >= 0)
-            {
-                have_infinite_vertex = false;
-                foreach (var v in vertices)
-                {
-                    if (v.is_infinite)
-                    {
-                        continue;
-                    }
-                    if (!v.has_stopped())
-                    {
-                        have_infinite_vertex = true;
-                        break;
-                    }
-                }
-                //DBG(//DBG_SKEL) << " have an infinite vertex: " << have_infinite_vertex;
-                if (!have_infinite_vertex)
-                {
-                    skeleton.set_num_v_skew(0);
-                };
-            }
-            else
-            {
-                have_infinite_vertex = true;
-            }
-            skeleton.set_number_of_points_and_curves();
+            //foreach (var v in vertices)
+            //{
+            //    assert(v.is_infinite.ToInt() + v.is_degenerate().ToInt() == 1 || v.skeleton_dcel_halfedge(0) != null);
+            //    assert(v.is_infinite.ToInt() + v.is_degenerate().ToInt() == 1 || v.skeleton_dcel_halfedge(1) != null);
+            //}
 
-            bool did_infinite_vertex = false;
+            ///* set up vertices */
+            //bool have_infinite_vertex;
+            //if (restrict_component_ >= 0)
+            //{
+            //    have_infinite_vertex = false;
+            //    foreach (var v in vertices)
+            //    {
+            //        if (v.is_infinite)
+            //        {
+            //            continue;
+            //        }
+            //        if (!v.has_stopped())
+            //        {
+            //            have_infinite_vertex = true;
+            //            break;
+            //        }
+            //    }
+            //    //DBG(//DBG_SKEL) << " have an infinite vertex: " << have_infinite_vertex;
+            //    if (!have_infinite_vertex)
+            //    {
+            //        skeleton.set_num_v_skew(0);
+            //    };
+            //}
+            //else
+            //{
+            //    have_infinite_vertex = true;
+            //}
+            //skeleton.set_number_of_points_and_curves();
+
+            //bool did_infinite_vertex = false;
+            /* TODO
             foreach (var v in vertices)
             {
                 if (v.is_infinite || v.is_degenerate())
                 {
                     continue;
                 };
-                //DBG(//DBG_SKEL) << "  Setting dcel vertex for " << v.details();
+                //DBG(//DBG_SKEL) << "  Setting dcel vertex for " << v.Debug();
                 SkeletonDCELHalfedge he;
                 if (v.is_initial)
                 {
@@ -368,7 +379,7 @@ namespace SurfNet
             }
             assert(did_infinite_vertex ^ !have_infinite_vertex);
 
-            /* set up segments/rays for arcs */
+            // set up segments/rays for arcs 
             foreach (var v in vertices)
             {
                 if (v.is_infinite || v.is_degenerate())
@@ -400,7 +411,7 @@ namespace SurfNet
                 he0.set_curve(p);
                 he1.set_curve(p);
             }
-            /* and input segments */
+            // and input segments 
             for (var he = skeleton.halfedges_begin(); he != skeleton.halfedges_end(); he = he.next())
             {
                 if (he.is_emanating_input())
@@ -418,7 +429,7 @@ namespace SurfNet
                 }
             }
             skeleton.assert_sane();
-
+            */
             finalized = true;
 
         }
@@ -426,41 +437,41 @@ namespace SurfNet
         private void link_dcel_halfedges_on_ignored_side()
         {
             
-            //DBG_FUNC_BEGIN(//DBG_SKEL);
+           
 
-            foreach (var he in skeleton.halfedges)
-            {
-                if (!he.is_emanating_input() && he.opposite().is_emanating_input())
-                {
-                    /* This is the "ignored" side of an input edge. */
-                    if (he.next() != null)
-                    { // already processed
-                        continue;
-                    }
+            //foreach (var he in skeleton.halfedges)
+            //{
+            //    if (!he.is_emanating_input() && he.opposite().is_emanating_input())
+            //    {
+            //        /* This is the "ignored" side of an input edge. */
+            //        if (he.next() != null)
+            //        { // already processed
+            //            continue;
+            //        }
 
-                    SkeletonDCELFace f;
-                    SkeletonDCELCbb c;
-                    f = skeleton.new_face();
-                    c = skeleton.new_outer_ccb();
-                    c.set_face(f);
-                    var cur_he = he;
+            //        SkeletonDCELFace f;
+            //        SkeletonDCELCbb c;
+            //        f = skeleton.new_face();
+            //        c = skeleton.new_outer_ccb();
+            //        c.set_face(f);
+            //        var cur_he = he;
 
-                    do
-                    {
-                        /* find next */
-                        var next = cur_he.opposite();
-                        while ( next.prev()!=null)
-                        {
-                            next = next.prev().opposite();
-                            assert(next!=null);
-                        }
-                        cur_he.set_next(next);
-                        cur_he = next;
-                    } while (cur_he != he);
+            //        do
+            //        {
+            //            /* find next */
+            //            var next = cur_he.opposite();
+            //            while ( next.prev()!=null)
+            //            {
+            //                next = next.prev().opposite();
+            //                assert(next!=null);
+            //            }
+            //            cur_he.set_next(next);
+            //            cur_he = next;
+            //        } while (cur_he != he);
 
-                    f.add_outer_ccb(c, he);
-                }
-            }
+            //        f.add_outer_ccb(c, he);
+            //    }
+            //}
            
         }
 
@@ -469,51 +480,51 @@ namespace SurfNet
 
         private void set_dcel_vertex(SkeletonDCELHalfedge start, Point2? p, double time)
         {
+            throw new NotImplementedException();
+            //SkeletonDCELVertex new_v = skeleton.new_vertex();
+            //new_v.set_halfedge(start);
+            //if (p != null)
+            //{
+            //    Point_3 pp = skeleton.new_point(new Point_3(p.Value.X, p.Value.Y, time));
+            //    new_v.set_point(pp);
+            //}
 
-            SkeletonDCELVertex new_v = skeleton.new_vertex();
-            new_v.set_halfedge(start);
-            if (p != null)
-            {
-                Point_3 pp = skeleton.new_point(new Point_3(p.Value.X, p.Value.Y, time));
-                new_v.set_point(pp);
-            }
+            //int degree = 0;
+            //SkeletonDCELHalfedge he = start;
+            //do
+            //{
+            //    he.set_vertex(new_v);
+            //    //DBG(//DBG_SKEL) << "  Setting vertex for " << *he;
+            //    assert(he.next() != null);
+            //    if (he.next() == null)
+            //    {
+            //        /* If we miss events, then we can end up in an inconsistent state.
+            //         * See for instance https://github.com/cgalab/surfer2/issues/2
+            //         * This guards against the segfault and causes an abort instead.  Not
+            //         * convinced that's the way to go, but still.
+            //         */
+            //        throw new Exception("We were asked to create a DCEL vertex but the half-edge has a null next pointer.  This should not happen.");
 
-            int degree = 0;
-            SkeletonDCELHalfedge he = start;
-            do
-            {
-                he.set_vertex(new_v);
-                //DBG(//DBG_SKEL) << "  Setting vertex for " << *he;
-                assert(he.next() != null);
-                if (he.next() == null)
-                {
-                    /* If we miss events, then we can end up in an inconsistent state.
-                     * See for instance https://github.com/cgalab/surfer2/issues/2
-                     * This guards against the segfault and causes an abort instead.  Not
-                     * convinced that's the way to go, but still.
-                     */
-                    throw new Exception("We were asked to create a DCEL vertex but the half-edge has a null next pointer.  This should not happen.");
-
-                }
-                he = he.next().opposite();
-                degree++;
-            } while (he != start);
+            //    }
+            //    he = he.next().opposite();
+            //    degree++;
+            //} while (he != start);
         }
 
-        /** Set up DCEL half-edges around one straight skeleton face
-       *
-       * The kinetic vertex start is the "right" vertex of base, which traces out f.  We are walking
-       * along the boundary of f counter-clockwise.
-       */
+        /// <summary>
+        /// Set up DCEL half-edges around one straight skeleton face
+        /// The kinetic vertex start is the "right" vertex of base, which traces out f.  We are walking
+        /// along the boundary of f counter-clockwise.
+        /// </summary>
 
-        private SkeletonDCELHalfedge create_remaining_skeleton_dcel_one_face(WavefrontVertex start, SkeletonDCELHalfedge heBase, SkeletonDCELCbb c, SkeletonDCELFace f)
+        private SkeletonDCELHalfedge create_remaining_skeleton_dcel_one_face(WavefrontVertex start, SkeletonDCELHalfedge? heBase, SkeletonDCELCbb? c, SkeletonDCELFace f)
         {
 
 
             //DBG_FUNC_BEGIN(//DBG_SKEL);
             assert(start.is_initial);
-            assert(c!=null);
-            assert(f!=null);
+            //assert(c!=null);
+            //assert(f!=null);
 
             if (heBase!=null)
             {
@@ -523,6 +534,7 @@ namespace SurfNet
             {
                 //DBG(//DBG_SKEL) << "starting at : " << start << "; base: -";
             }
+            
             SkeletonDCELHalfedge prev_he = heBase;
             WavefrontVertex cur_v = start;
             WavefrontVertex prev_v;
@@ -530,12 +542,16 @@ namespace SurfNet
             bool looped_around = false;
             while (!looped_around )
             {
-                //DBG(//DBG_SKEL) << " doing " << cur_v << "; " << cur_v.details();
+                Log($">{cur_v.Debug()}");
+
                 assert(!cur_v.is_degenerate());
 
                 SkeletonDCELHalfedge new_he;
-                /* Make a new halfedge or use the one we already have for this vertex. */
+                // Make a new halfedge or use the one we already have for this vertex. 
+               
+                /* TODO
                 assert(cur_v.skeleton_dcel_halfedge(side_of_f)==null);
+
                 if (cur_v.skeleton_dcel_halfedge(1 - side_of_f)!=null)
                 {
                     new_he = cur_v.skeleton_dcel_halfedge(1 - side_of_f).opposite();
@@ -556,27 +572,51 @@ namespace SurfNet
                 }
                 prev_he = new_he;
                 cur_v.set_skeleton_dcel_halfedge(side_of_f, new_he);
+                */
 
-                //DBG(//DBG_SKEL) << "  looking for next. ";
+                Log($"  looking for next. ");
                 bool foundvertex = false;
                 do
                 {
                     prev_v = cur_v;
-                    /* if side_of_f is 1 (i.e. if the face is to the right of us, we are
-                     * going forward on this vertex, else we are going backwards. */
+                    // if side_of_f is 1 (i.e. if the face is to the right of us, we are
+                    // going forward on this vertex, else we are going backwards. 
                     if (side_of_f!=0)
                     {
+                        var prev = cur_v.prev_vertex(side_of_f);
+                        if (prev!=null&& prev.is_initial)
+                        {
+                        }
                         cur_v = cur_v.prev_vertex(side_of_f);
                     }
                     else
                     {
-                        cur_v = cur_v.next_vertex(side_of_f);
+                        var next_v = cur_v.next_vertex(side_of_f);
+                        if (next_v !=null &&  next_v.is_initial )
+                        {
+
+                          if(  next_v.next_vertex(1 - side_of_f) == cur_v  &&
+                               next_v.next_vertex( side_of_f) == next_v.next_vertex( side_of_f))
+                            {
+                                Warning($"Add {next_v.next_vertex(side_of_f)} -> Add {next_v }");
+                                looped_around = true;
+                            }
+                            else
+                            {
+                                cur_v = next_v; 
+                            }
+
+                        }
+                        else
+                        {
+                            cur_v = cur_v.next_vertex(side_of_f);
+                        }
                     }
-                    //DBG(//DBG_SKEL) << "  considering " << cur_v;
+                    Log($" {side_of_f}   considering {cur_v}");
 
                     if (cur_v == null && side_of_f == 0)
-                    { /* prev wavefront vertex escapes to infinity */
-                        //DBG(//DBG_SKEL) << "  went to infinity (and beyond?).  jumping over using wavefront edge";
+                    {   // prev wavefront vertex escapes to infinity 
+                        Log($"  went to infinity (and beyond?).  jumping over using wavefront edge");
                         assert(!prev_v.has_stopped());
                         WavefrontEdge e = prev_v.incident_wavefront_edge(0);
                         assert(!e.is_dead());
@@ -588,13 +628,13 @@ namespace SurfNet
                     }
                     else if (cur_v == null && side_of_f == 1)
                     {
-                        //DBG(//DBG_SKEL) << "  done now, arrived at base.";
+                        Log($"  done now, arrived at base.");
                         assert(prev_v.is_initial);
                        looped_around=true;
                     }
                     else if (cur_v == start)
                     {
-                        //DBG(//DBG_SKEL) << "  done now, looped around";
+                        Log($"    done now, looped around");
                         assert(cur_v.prev_vertex(0) == prev_v);
                         side_of_f = 0;
                         assert(prev_v.is_initial);
@@ -604,7 +644,10 @@ namespace SurfNet
                     else
                     {
                         assert(cur_v!=null);
+                        if (cur_v.is_initial)
+                        {
 
+                        }
                         /* Figure out which side f is one */
                         if (cur_v.prev_vertex(0) == prev_v)
                         {
@@ -616,10 +659,10 @@ namespace SurfNet
                             side_of_f = 1;
                         }
                     }
-                } while ( cur_v.is_degenerate() && !foundvertex && !looped_around);
+                } while (  !foundvertex && !looped_around && cur_v.is_degenerate());
                 if (foundvertex)
                 {
-                    //DBG(//DBG_SKEL) << "  found " << cur_v;
+                    Log($"  found {cur_v}");
                 }
                 foundvertex = false;
             };
@@ -627,17 +670,22 @@ namespace SurfNet
        
             if (cur_v!=null)
             {
-                //DBG(//DBG_SKEL) << "back at start, so this is the result of beveling";
-                /* beveling vertex, this is the start vertex, again, hopefully. */
+                Log($"back at start, so this is the result of beveling");
+
+                // beveling vertex, this is the start vertex, again, hopefully. 
                 assert(cur_v == start);
                 assert(side_of_f == 0);
                 assert(cur_v.skeleton_dcel_halfedge(side_of_f)!=null);
+                /* TODO
                 cur_v.skeleton_dcel_halfedge(side_of_f).set_prev(prev_he);
+                */
             }
             else
             {
+                /* TODO
                 assert(heBase.prev() == null);
                 heBase.set_prev(prev_he);
+                */
             }
             //DBG_FUNC_END(//DBG_SKEL);
             return prev_he;
@@ -809,11 +857,39 @@ namespace SurfNet
             KineticTriangle? na = t.neighbors[cw(edge_idx)];
             KineticTriangle? nb = t.neighbors[ccw(edge_idx)];
 
-            WavefrontVertex v = vertices.make_vertex(pos, time, ea, eb);
+            WavefrontVertex v = vertices.make_vertex(skeleton,pos, time, ea, eb);
+
             //DBG(//DBG_KT) << " va: " << va;
             //DBG(//DBG_KT) << " vb: " << vb;
+            
             va.set_next_vertex(0, v);
             vb.set_next_vertex(1, v);
+
+
+            Log($"Colapse Vertex from:");
+            Log($" va:{va.Debug()}");
+            Log($" vb:{vb.Debug()}");
+            Log($"To");
+            Log($" {v.Debug()}");
+
+            //assert(va.Halfedge.Opposite != null);
+            //assert(va.Halfedge.Opposite.Next.Next.Vertex == vb.Vertex);
+            //if (va.Halfedge.Opposite.Next.Next.Vertex != vb.Vertex)
+            //{
+
+            //}
+
+            var hal = va.Halfedge;
+            var har = va.Halfedge.Opposite;
+            var hbl = vb.Halfedge;
+            var hbr = vb.Halfedge.Opposite;
+            var  hl = v.Halfedge;
+            var hr = v.Halfedge.Opposite;
+            hbr.Vertex= har.Vertex = v.Vertex;
+            hbl.Next = har;
+            hal.Next = hl;
+            hr.Next = hbr;
+            
 
             {
                 int affected_triangles = 0;
@@ -963,12 +1039,13 @@ namespace SurfNet
             int num_constraints = t.is_constrained(0).ToInt() + t.is_constrained(1).ToInt() + t.is_constrained(2).ToInt();
             //DBG(//DBG_KT_EVENT) << "have " << num_constraints << " constraints";
 
-          
+            
+
 
             for (int i = 0; i < 3; ++i)
             {
                 t.vertices[i].stop(time);
-                //DBG(//DBG_KT_EVENT) << "v[" << i << "]: " << t.vertices[i];
+                Log($"v[{i}]:{t.vertices[i].Debug()}");
             }
             for (int i = 1; i < 3; ++i)
             {
@@ -1002,6 +1079,45 @@ namespace SurfNet
                     do_spoke_collapse_part2(n, idx_in_n, time);
                 }
             }
+
+            bool equals = true;
+            for (int i = 0; i < 3; ++i)
+            {
+                assert(t.vertices[i].pos_stop().AreNear(t.vertices[i.ccw()].pos_stop()));
+                equals = equals && t.vertices[i].pos_stop().AreNear(t.vertices[i.ccw()].pos_stop());
+                if(!equals)
+                {
+
+                }
+            }
+            if ( equals)
+            {
+
+            }
+            else
+            {
+                throw new Exception();
+            }
+
+
+            var vcenter = skeleton.new_vertex(-t.vertices[0].Id, t.vertices[0].pos_stop(), t.vertices[0].time_stop());
+
+            var hal = t.vertices[1].Halfedge;
+            var har = hal.Opposite;
+            var hbl = t.vertices[0].Halfedge;
+            var hbr = hbl.Opposite;
+
+            var hcl = t.vertices[2].Halfedge;
+            var hcr = hcl.Opposite;
+            har.Vertex = vcenter;
+            hbr.Vertex = vcenter;
+            hcr.Vertex = vcenter;
+            vcenter.Halfedge = har;
+
+            hal.Next = hbr;
+            hbl.Next = hcr;
+            hcl.Next = har;
+
             queue.needs_dropping(t);
 
             assert_valid(t.component, time);
@@ -1012,8 +1128,8 @@ namespace SurfNet
         private void handle_split_event(CollapseEvent evnt)
         {
 
-            Log($"Handle Split Event ");
-            LogIndent();
+          //  Log($"Handle Split Event ");
+         //   LogIndent();
             assert(evnt.type() == CollapseType.SPLIT_OR_FLIP_REFINE);
            
             KineticTriangle  t = triangles[evnt.t.Id];
@@ -1050,10 +1166,10 @@ namespace SurfNet
                // If either are collinear, things can still happen.
               
 
-                Vector2  e0 =(t.vertices[edge_idx].incident_wavefront_edge(0).l().l.to_vector());
-                Vector2  e1 =(t.vertices[edge_idx].incident_wavefront_edge(1).l().l.to_vector());
-                var o0 = (orientation(e.l().l.to_vector(), e0));
-                var o1 = (orientation(e.l().l.to_vector(), e1));
+                Vector2  e0 =(t.vertices[edge_idx].incident_wavefront_edge(0).l().l.ToVector());
+                Vector2  e1 =(t.vertices[edge_idx].incident_wavefront_edge(1).l().l.ToVector());
+                var o0 = (orientation(e.l().l.ToVector(), e0));
+                var o1 = (orientation(e.l().l.ToVector(), e1));
 
                 assert(o0 != OrientationEnum.LEFT_TURN);
                 assert(o1 != OrientationEnum.RIGHT_TURN);
@@ -1069,19 +1185,70 @@ namespace SurfNet
             WavefrontEdge neb = new_edges.Right;
 
             // Create new wavefront vertices with the new edges
-            WavefrontVertex nva = vertices.make_vertex(pos, time, nea, ea, true);
-            WavefrontVertex nvb = vertices.make_vertex(pos, time, eb, neb, true);
 
+
+            WavefrontVertex nva = vertices.make_vertex(skeleton, pos, time, nea, ea, true);
+            WavefrontVertex nvb = vertices.make_vertex(nva.Vertex, eb, neb, true);
+            nvb.Virtual = true;
+            SkeletonDCELVertex.IncId();
+            nva.dbg_orientation = -1;
+            nvb.dbg_orientation = 1;
+            nva.dbg_vector_velocity = v.velocity.perpendicular(OrientationEnum.RIGHT_TURN).Normal();
+            nvb.dbg_vector_velocity = v.velocity.perpendicular(OrientationEnum.LEFT_TURN);
             // And set these new vertices on the edges.
+
             nea.vertex(0).set_incident_wavefront_edge(1, nea);
             nea.set_wavefrontedge_vertex(1, nva);
             neb.set_wavefrontedge_vertex(0, nvb);
             neb.vertex(1).set_incident_wavefront_edge(0, neb);
 
             // And update prev/next for the DCEL that is the wavefront vertices
+
             v.set_next_vertex(0, nvb);
             v.set_next_vertex(1, nva);
+
+
+            nvb.Halfedge = skeleton.new_edge();
+            nvb.Halfedge.Vertex = nvb.Vertex;
+
+             var hl = v.Halfedge;
+            var hr = v.Halfedge.Opposite;
+            
+            var hal = nva.Halfedge;
+            var har = nva.Halfedge.Opposite;
+
+            var hbl = nvb.Halfedge;
+            var hbr = nvb.Halfedge.Opposite;
+
+
+            hl.Next = hbl;
+            hbr.Next = hal;
+            har.Next = hr;
+            hr.Vertex = nvb.Vertex;
+
+
+
+
+
+
+            //v.Halfedge.Next = nva.Halfedge;
+            //nva.Halfedge.Next = nvb.Halfedge;
+            //nvb.Halfedge.Next = v.Halfedge;
+            
+            
+            
+             
+
+
             nva.link_tail_to_tail(nvb);
+
+
+            Log($"Split Vertex from:");
+            Log($"{v.Debug()}");
+            Log($" va:{nva.Debug()}");
+            Log($" vb:{nvb.Debug()}");
+
+
 
             t.set_dying();
             {
@@ -1149,7 +1316,7 @@ namespace SurfNet
             queue.needs_dropping(t);
             assert_valid(t.component, time);
 
-            LogIndent();
+           
         }
 
 
@@ -1225,9 +1392,9 @@ namespace SurfNet
                  * They are generally handled identically, however the assertions are slightly different
                  * ones as these cases differ in which of v's incident edges is relevant.
                  */
-                Vector2 e = (t.wavefront(edge_idx).l().l.to_vector());
-                Vector2 e0 = (t.vertex(edge_idx).incident_wavefront_edge(0).l().l.to_vector());
-                Vector2 e1 = (t.vertex(edge_idx).incident_wavefront_edge(1).l().l.to_vector());
+                Vector2 e = (t.wavefront(edge_idx).l().l.ToVector());
+                Vector2 e0 = (t.vertex(edge_idx).incident_wavefront_edge(0).l().l.ToVector());
+                Vector2 e1 = (t.vertex(edge_idx).incident_wavefront_edge(1).l().l.ToVector());
                 var o0 = (orientation(e, e0));
                 var o1 = (orientation(e, e1));
                 int flip_edge;
@@ -1326,7 +1493,7 @@ namespace SurfNet
             ////DBG(//DBG_KT_EVENT) << evnt;
 
             //assert(evnt.type() == CollapseType.FACE_HAS_INFINITELY_FAST_VERTEX_WEIGHTED);
-            //KineticTriangle tref = triangles[evnt.t.id];
+            //KineticTriangle tref = triangles[evnt.t.Id];
             //KineticTriangle t = tref;
             //double time(evnt.time());
             //int edge_idx = evnt.relevant_edge();
@@ -1845,10 +2012,11 @@ namespace SurfNet
                             if (v.wavefronts()[1].vertex(1) == va && va.is_reflex_or_straight()) break;
                             if (v.wavefronts()[0].vertex(0) == vb && vb.is_reflex_or_straight()) break;
                             /* Either at v, or at the opposite vertex */
-                            // //DBG(//DBG_KT_REFINE) << "   o.wavefronts()[0].vertex(0) " << o.wavefronts()[0].vertex(0);
-                            // //DBG(//DBG_KT_REFINE) << "   o.wavefronts()[0].vertex(1) " << o.wavefronts()[0].vertex(1);
-                            // //DBG(//DBG_KT_REFINE) << "   o.wavefronts()[1].vertex(0) " << o.wavefronts()[1].vertex(0);
-                            // //DBG(//DBG_KT_REFINE) << "   o.wavefronts()[1].vertex(1) " << o.wavefronts()[1].vertex(1);
+                            //Log($"   o.wavefronts()[0].vertex(0) {o.wavefronts()[0].vertex(0)}");
+                            //Log($"   o.wavefronts()[0].vertex(1) {o.wavefronts()[0].vertex(1)}");
+                            
+                            //Log($"   o.wavefronts()[1].vertex(0) {o.wavefronts()[1].vertex(0)}");
+                            //Log($"   o.wavefronts()[1].vertex(1) {o.wavefronts()[1].vertex(1)}");
                             if (o.wavefronts()[0].vertex(0) == va && va.is_reflex_or_straight()) break;
                             if (o.wavefronts()[1].vertex(1) == vb && vb.is_reflex_or_straight()) break;
 
@@ -1902,7 +2070,7 @@ namespace SurfNet
             }
             process_check_refinement_queue(CORE_ZERO);
             assert_valid(-1, CORE_ZERO);
-            IsIntialRefineTriangleDoit = true;  
+            IsIntialRefineTriangleDoit = false;  
         }
 
         private partial void process_check_refinement_queue(double time);

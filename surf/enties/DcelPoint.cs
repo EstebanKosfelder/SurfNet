@@ -53,7 +53,7 @@ namespace SurfNet
         #region Public properties
 
         /// <summary>
-        /// Gets or sets the vertex id.
+        /// Gets or sets the vertex Id.
         /// </summary>
         public int ID
         {

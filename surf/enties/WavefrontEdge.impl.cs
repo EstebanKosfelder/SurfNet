@@ -9,7 +9,7 @@
         //std::ostream&
         //operator<<(std::ostream& os, const WavefrontEdge& e) {
         //  os << "wfe";
-        //  DEBUG_STMT(os << "#" << e.id );
+        //  DEBUG_STMT(os << "#" << e.Id );
         //        os << "("
         //    << e.vertices[0] << ","
         //    << e.vertices[1] << ")";

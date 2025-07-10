@@ -212,7 +212,7 @@ namespace SurfNet
 
                         tri.orient++;
                     }
-                    Console.WriteLine();
+                  
                     yield return segments;
                 }
             }
@@ -382,7 +382,7 @@ namespace SurfNet
             {
             
                 var wavefront_edge = new WavefrontEdge(cv.Point, cv.NextInLAV.Point, 1, null, null);
-                //assert(wavefront_edge.id == cv.ID);
+                //assert(wavefront_edge.Id == cv.ID);
                 wavefront_edges.Add(wavefront_edge);
             }
             foreach (var cv in ContourVertices)
@@ -391,7 +391,7 @@ namespace SurfNet
                 var right = wavefront_edges[cv.ID];
 
 
-                vertices.make_initial_vertex(cv.Point, left, right, true);
+                vertices.make_initial_vertex(skeleton, cv.ID, cv.Point, left, right, true);
                 assert(vertices.Last().Id == cv.ID);
 
             }
@@ -445,10 +445,10 @@ namespace SurfNet
         //    foreach (var v in mesh.vertices.Values)
         //    {
         //        vertex = new HVertex(v.x, v.y);
-        //        vertex.ID = v.id;
+        //        vertex.ID = v.Id;
         //        vertex.Label = v.label;
 
-        //        vertices[v.id] = vertex;
+        //        vertices[v.Id] = vertex;
         //    }
 
         //    // Maps a triangle to its 3 edges (used to set next pointers).
@@ -459,17 +459,17 @@ namespace SurfNet
         //    foreach (var t in mesh.triangles)
         //    {
         //        face = new DcelFace(null);
-        //        face.id = t.id;
+        //        face.Id = t.Id;
 
-        //        faces[t.id] = face;
+        //        faces[t.Id] = face;
 
-        //        map[t.id] = new List<DcelHalfEdge>(3);
+        //        map[t.Id] = new List<DcelHalfEdge>(3);
         //    }
 
         //    Otri tri = default(Otri), neighbor = default(Otri);
         //    TVertex org, dest;
 
-        //    int id, nid, count = mesh.triangles.Count;
+        //    int Id, nid, count = mesh.triangles.Count;
 
         //    DcelHalfEdge edge, twin, next;
 
@@ -483,7 +483,7 @@ namespace SurfNet
 
         //    foreach (var t in mesh.triangles)
         //    {
-        //        id = t.id;
+        //        Id = t.Id;
 
         //        tri.tri = t;
 
@@ -492,11 +492,11 @@ namespace SurfNet
         //            tri.orient = i;
         //            tri.Sym(ref neighbor);
 
-        //            nid = neighbor.tri.id;
+        //            nid = neighbor.tri.Id;
 
-        //            if (id < nid || nid < 0)
+        //            if (Id < nid || nid < 0)
         //            {
-        //                face = faces[id];
+        //                face = faces[Id];
 
         //                // Get the endpoints of the current triangle edge.
         //                org = tri.Org();
@@ -504,12 +504,12 @@ namespace SurfNet
 
         //                // Create half-edges.
 
-        //                edge = new DcelHalfEdge(vertices[org.id], face);
+        //                edge = new DcelHalfEdge(vertices[org.Id], face);
 
 
-        //                twin = new DcelHalfEdge(vertices[dest.id], nid < 0 ? DcelFace.Empty : faces[nid]);
+        //                twin = new DcelHalfEdge(vertices[dest.Id], nid < 0 ? DcelFace.Empty : faces[nid]);
 
-        //                map[id].Add(edge);
+        //                map[Id].Add(edge);
 
         //                if (nid >= 0)
         //                {
@@ -517,7 +517,7 @@ namespace SurfNet
         //                }
         //                else
         //                {
-        //                    boundary.Add(dest.id, twin);
+        //                    boundary.Add(dest.Id, twin);
         //                }
 
         //                // Set leaving edges.
@@ -528,8 +528,8 @@ namespace SurfNet
         //                edge.twin = twin;
         //                twin.twin = edge;
 
-        //                edge.id = k++;
-        //                twin.id = k++;
+        //                edge.Id = k++;
+        //                twin.Id = k++;
 
         //                edges.Add(edge);
         //                edges.Add(twin);

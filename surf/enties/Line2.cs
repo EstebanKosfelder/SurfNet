@@ -8,7 +8,7 @@ namespace SurfNet
 
         public override string ToString()
         {
-            return $" a:{A} b:{B} c:{C} n:{to_vector().Normal()} ";
+            return $" a:{A} b:{B} c:{C} n:{ToVector().Normal()} ";
         }
         public Line2(FT a, FT b, FT c) { A = a; B = b; C = c; }
 
@@ -85,7 +85,7 @@ namespace SurfNet
             return side_of(this.Distance(point));
         }
 
-        public Vector2 to_vector() => new Vector2(b(), -a());
+        public Vector2 ToVector() => new Vector2(b(), -a());
 
         internal static Line2 perpendicular_through_point(FT la, FT lb, FT px, FT py)
         {

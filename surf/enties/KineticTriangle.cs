@@ -162,7 +162,7 @@
 
         //friend std::ostream& operator<<(std::ostream& os, const KineticTriangle  const kt);
         //std::string get_name() const {
-        //  return "kt" + std::to_string(id);
+        //  return "kt" + std::to_string(Id);
         //}
 
         private void assert_is_id(int q)
@@ -336,7 +336,7 @@
             double collapse_time;
             VertexOnSupportingLineType vertex_on_line_type;
 
-            Log($" ");
+       
 
             /* Let n be some normal to e,
              * let P be some point on e (at time zero),

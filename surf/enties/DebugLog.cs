@@ -136,7 +136,7 @@ namespace SurfNet
 
         public static void Warning(string text = "", ConsoleColor foregroundColor = ConsoleColor.White, ConsoleColor backgroundColor = ConsoleColor.Black)
         {
-            Log(text);
+            SendWarning?.Invoke (text);
         }
         public static void Log(string text = "", ConsoleColor foregroundColor = ConsoleColor.White, ConsoleColor backgroundColor = ConsoleColor.Black)
         {

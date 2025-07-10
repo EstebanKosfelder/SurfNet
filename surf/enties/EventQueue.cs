@@ -544,8 +544,8 @@
         {
             int id = t.Id;
             /*
-            if (id >= tidx_to_qitem_map.Count) {
-              tidx_to_qitem_map.resize(id+1);
+            if (Id >= tidx_to_qitem_map.Count) {
+              tidx_to_qitem_map.resize(Id+1);
             };
             */
             Debug.Assert(id < tidx_to_qitem_map.Count());
@@ -621,8 +621,8 @@
         {
 
             
-            Log($"{nameof(needs_update)} kt:{t.Id} {(may_have_valid_collapse_spec?"no validate":null)} ");
-            LogIndent();
+           // Log($"{nameof(needs_update)} kt:{t.Id} {(may_have_valid_collapse_spec?"no validate":null)} ");
+           //  LogIndent();
             Debug.Assert(tidx_in_need_update.Count() > t.Id);
             Debug.Assert(!t.is_collapse_spec_valid() || may_have_valid_collapse_spec);
             // during refinement, the same triangle may be tagged as needs_update multiple times.
@@ -1256,14 +1256,14 @@
 
 //    public void tidx_to_qitem_map_add(KineticTriangle t, HeapItemBase<CollapseEvent> qi)
 //    {
-//        int id = t.Id;
+//        int Id = t.Id;
 //        /*
-//        if (id >= tidx_to_qitem_map.Count) {
-//          tidx_to_qitem_map.resize(id+1);
+//        if (Id >= tidx_to_qitem_map.Count) {
+//          tidx_to_qitem_map.resize(Id+1);
 //        };
 //        */
-//        Debug.Assert(id < tidx_to_qitem_map.Count());
-//        tidx_to_qitem_map[id] = qi;
+//        Debug.Assert(Id < tidx_to_qitem_map.Count());
+//        tidx_to_qitem_map[Id] = qi;
 //    }
 
 //    public void drop_by_tidx(int tidx)

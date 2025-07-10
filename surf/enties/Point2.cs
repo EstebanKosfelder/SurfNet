@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 using FT = System.Double;
 
@@ -10,6 +11,7 @@ namespace SurfNet
 {
 
     using static Mathex;
+    using static DebugLog;
     public struct Point2
     {
 
@@ -29,12 +31,12 @@ namespace SurfNet
         {
             get
             {
-                Debug.Assert(index >= 0 && index <= 1);
+                assert(index >= 0 && index <= 1);
                 return index == 0 ? X : Y;
             }
             set
             {
-                Debug.Assert(index >= 0 && index <= 1);
+                assert(index >= 0 && index <= 1);
                 if (index == 0) X = value; else Y = value;
             }
 
@@ -152,8 +154,14 @@ namespace SurfNet
             return X * X + Y * Y;
         }
 
+        public string Debug(int dec = 3)
+        {
+            var f = CultureInfo.InvariantCulture;
+            return $"({X.ToString($"F{dec}",f)}, {Y.ToString($"F{dec}", f)})";
+        }
         public override string ToString()
         {
+           
             return String.Format(CultureInfo.InvariantCulture, "({0:F9} {1:F9})", X, Y);
         }
 

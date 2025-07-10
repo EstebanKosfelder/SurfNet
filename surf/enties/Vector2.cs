@@ -1,5 +1,6 @@
 ﻿
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using FT = System.Double;
 
@@ -10,7 +11,11 @@ namespace SurfNet
 
         public FT X;
         public FT Y;
-
+        public string Debug(int dec = 3)
+        {
+            var f = CultureInfo.InvariantCulture;
+            return $"({X.ToString($"F{dec}", f)}, {Y.ToString($"F{dec}", f)})";
+        }
         public override string ToString()
         {
             return $"({X}, {Y})";
@@ -69,7 +74,7 @@ namespace SurfNet
         public Vector2(in Segment2 s) : this(s.to_vector()) { }
 
         //public Vector2(in  Origin o, in Point_2 q) :this(q.x(), q.y()){ }
-        public Vector2(in Line2 l) : this(l.to_vector()) { }
+        public Vector2(in Line2 l) : this(l.ToVector()) { }
 
         public static Vector2 NaN => new Vector2(FT.NaN, FT.NaN);
 

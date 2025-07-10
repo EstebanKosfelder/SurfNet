@@ -6,7 +6,7 @@
         {
             this.Id = id;
             this.p = point;
-            this.degree = degree;
+            this.degree = 0;
         }
         public int Id { get; private set; } 
         public Point2 p { get; internal set; }

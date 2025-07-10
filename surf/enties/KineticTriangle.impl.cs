@@ -151,7 +151,7 @@
             //DBG(//DBG_TRIANGLE_ASSERT_VALID) << this;
             for (int i = 0; i < 3; ++i)
             {
-                //DBG(//DBG_TRIANGLE_ASSERT_VALID) << "- v" << i << ": " << vertices[i].details();
+                //DBG(//DBG_TRIANGLE_ASSERT_VALID) << "- v" << i << ": " << vertices[i].Debug();
             }
             for (int i = 0; i < 3; ++i)
             {
@@ -838,7 +838,7 @@ determine_split_or_flip_bounded_constrained_1(double collapse_time, int c_idx){
             assert(candidate.type() == CollapseType.CONSTRAINT_COLLAPSE);
             CollapseSpec result = new CollapseSpec(component, CollapseType.TRIANGLE_COLLAPSE, candidate.time());
 
-            Log($"compute 3: tk:{this.Id} {result}");
+         //   Log($"compute 3: tk:{this.Id} {result}");
             return result;
         } 
 
@@ -862,9 +862,9 @@ determine_split_or_flip_bounded_constrained_1(double collapse_time, int c_idx){
             assert(wavefronts[c1_idx] != null);
             assert(wavefronts[c2_idx] != null);
 
-            //DBG(//DBG_TRIANGLE) << "v0: " << vertices[0].details();
-            //DBG(//DBG_TRIANGLE) << "v1: " << vertices[1].details();
-            //DBG(//DBG_TRIANGLE) << "v2: " << vertices[2].details();
+            //DBG(//DBG_TRIANGLE) << "v0: " << vertices[0].Debug();
+            //DBG(//DBG_TRIANGLE) << "v1: " << vertices[1].Debug();
+            //DBG(//DBG_TRIANGLE) << "v2: " << vertices[2].Debug();
             //DBG(//DBG_TRIANGLE) << "wavefront idx 1: " << c1_idx;
             //DBG(//DBG_TRIANGLE) << "wavefront idx 2: " << c2_idx;
             //DBG(//DBG_TRIANGLE) << "wavefront 1: " << *wavefronts[c1_idx];
@@ -893,7 +893,7 @@ determine_split_or_flip_bounded_constrained_1(double collapse_time, int c_idx){
                 result = c1.CompareTo(c2) < 1 ? c1 : c2;
             }
 
-            Log($"compute 2: tk:{this.Id} {result}");
+          //  Log($"compute 2: tk:{this.Id} {result}");
             return result;
         } 
 
@@ -1038,12 +1038,12 @@ determine_split_or_flip_bounded_constrained_1(double collapse_time, int c_idx){
 
                     if (have_collapse)
                     {
-                        Log("$ We like the edge collapse.");
+  //                      Log("$ We like the edge collapse.");
                         result = candidate;
                     }
                     else
                     {
-                        Log($"We did not like the edge collapse.  Hunt for the real event.");
+                  //      Log($"We did not like the edge collapse.  Hunt for the real event.");
                         result = compute_split_or_flip_event_bounded_constrained_1(time_now, c_idx, determinant);
                     }
                 }
@@ -1065,7 +1065,7 @@ determine_split_or_flip_bounded_constrained_1(double collapse_time, int c_idx){
                 }
             }
 
-            Log($"compute 1: tk:{this.Id} {result}");
+          //  Log($"compute 1: tk:{this.Id} {result}");
             return result;
         }
 
@@ -1082,7 +1082,7 @@ determine_split_or_flip_bounded_constrained_1(double collapse_time, int c_idx){
 
             Polynomial1D determinant = compute_determinant_from_vertices(vertex(0), vertex(1), vertex(2));
             var result = compute_flip_event(time_now, determinant);
-            Log($"compute 0: tk:{this.Id} {result}");
+           // Log($"compute 0: tk:{this.Id} {result}");
             return result;
         } 
 

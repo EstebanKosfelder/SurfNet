@@ -1,5 +1,7 @@
 ﻿namespace SurfNet
 {
+    using System.Runtime.InteropServices.Marshalling;
+    using TriangleNet.Topology.DCEL;
     using static DebugLog;
     using static Mathex;
     public partial class WavefrontPropagator
@@ -138,12 +140,38 @@
             if (!finalized)
             {
                 ///DBG(///DBG_PROP) << "Calling create_remaining_skeleton_dcel()";
-                sk.kt.create_remaining_skeleton_dcel();
+              //  sk.kt.create_remaining_skeleton_dcel();
                 finalized = true;
                 current_component = -1;
                 ///DBG(///DBG_PROP) << "Finalized.";
 
-                sk.kt.update_event_timing_stats(-1);
+
+                foreach (var v in  sk.kt.vertices)
+                {
+                    if (v.Id != v.Vertex.Id    ) 
+                    {
+                        if (v.Virtual  && v.Id == v.Vertex.Id + 1)
+                        {
+                            Log($" kv:{v.Id} => {v.Vertex.Id}");
+                            
+                        }
+                        else
+                        {
+                            Warning($" kv:{v.Id} => {v.Vertex.Id}");
+                        }
+
+                    }
+                    else
+                    {
+                        Log($" kv:{v.Id} => {v.Vertex.Id}");
+                    }
+                }
+
+                foreach (var f in sk.get_skeleton().faces)
+                {
+                    Log($"f:{f.Id} { string.Join("->", f.Halfedge.Circulation().Select(h=>    h.Vertex== null ? $"({h.id}) *" : h.Vertex.Id<0?$"({h.id}) [{Math.Abs(h.Vertex.Id)}]": $"({h.id}) {h.Vertex.Id}"))}");
+
+                }
             }
             ///DBG_FUNC_END(///DBG_PROP);
         }

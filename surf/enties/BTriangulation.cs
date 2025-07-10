@@ -20,10 +20,10 @@
         //    foreach (var v in mesh.vertices.Values)
         //    {
         //        vertex = new HVertex(v.X, v.Y);
-        //        vertex.id = v.id;
+        //        vertex.Id = v.Id;
         //        vertex.label = v.label;
 
-        //        vertices[v.id] = vertex;
+        //        vertices[v.Id] = vertex;
         //    }
 
         //    // Maps a triangle to its 3 edges (used to set next pointers).
@@ -34,17 +34,17 @@
         //    foreach (var t in mesh.triangles)
         //    {
         //        face = new Face(null);
-        //        face.id = t.id;
+        //        face.Id = t.Id;
 
-        //        faces[t.id] = face;
+        //        faces[t.Id] = face;
 
-        //        map[t.id] = new List<HalfEdge>(3);
+        //        map[t.Id] = new List<HalfEdge>(3);
         //    }
 
         //    Otri tri = default(Otri), neighbor = default(Otri);
         //    TVertex org, dest;
 
-        //    int id, nid, count = mesh.triangles.Count;
+        //    int Id, nid, count = mesh.triangles.Count;
 
         //    HalfEdge edge, twin, next;
 
@@ -58,7 +58,7 @@
 
         //    foreach (var t in mesh.triangles)
         //    {
-        //        id = t.id;
+        //        Id = t.Id;
 
         //        tri.tri = t;
 
@@ -67,21 +67,21 @@
         //            tri.orient = i;
         //            tri.Sym(ref neighbor);
 
-        //            nid = neighbor.tri.id;
+        //            nid = neighbor.tri.Id;
 
-        //            if (id < nid || nid < 0)
+        //            if (Id < nid || nid < 0)
         //            {
-        //                face = faces[id];
+        //                face = faces[Id];
 
         //                // Get the endpoints of the current triangle edge.
         //                org = tri.Org();
         //                dest = tri.Dest();
 
         //                // Create half-edges.
-        //                edge = new DcelHalfEdge(vertices[org.id], face);
-        //                twin = new DcelHalfEdge(vertices[dest.id], nid < 0 ? Face.Empty : faces[nid]);
+        //                edge = new DcelHalfEdge(vertices[org.Id], face);
+        //                twin = new DcelHalfEdge(vertices[dest.Id], nid < 0 ? Face.Empty : faces[nid]);
 
-        //                map[id].Add(edge);
+        //                map[Id].Add(edge);
 
         //                if (nid >= 0)
         //                {
@@ -89,7 +89,7 @@
         //                }
         //                else
         //                {
-        //                    boundary.Add(dest.id, twin);
+        //                    boundary.Add(dest.Id, twin);
         //                }
 
         //                // Set leaving edges.
@@ -100,8 +100,8 @@
         //                edge.twin = twin;
         //                twin.twin = edge;
 
-        //                edge.id = k++;
-        //                twin.id = k++;
+        //                edge.Id = k++;
+        //                twin.Id = k++;
 
         //                edges.Add(edge);
         //                edges.Add(twin);
@@ -115,7 +115,7 @@
         //        edge = t[0];
         //        next = t[1];
 
-        //        if (edge.twin.origin.id == next.origin.id)
+        //        if (edge.twin.origin.Id == next.origin.Id)
         //        {
         //            edge.next = next;
         //            next.next = t[2];
@@ -132,7 +132,7 @@
         //    // Resolve boundary edges.
         //    foreach (var e in boundary.Values)
         //    {
-        //        e.next = boundary[e.twin.origin.id];
+        //        e.next = boundary[e.twin.origin.Id];
         //    }
 
         //    dcel.Vertices.AddRange(vertices);

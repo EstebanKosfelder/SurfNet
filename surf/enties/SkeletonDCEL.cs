@@ -14,31 +14,31 @@ namespace SurfNet
         public List<SkeletonDCELCbb> out_ccbs = new List<SkeletonDCELCbb>();             // The outer CCBs.
         private int num_v_skew;
 
-        internal SkeletonDCELFace setup_new_input_edge(WavefrontEdge? buddy_wavefront)
-        {
+        //internal SkeletonDCELFace setup_new_input_edge(WavefrontEdge? buddy_wavefront)
+        //{
             
-            SkeletonDCELFace face = new_face();
-            SkeletonDCELCbb ccb = new_outer_ccb();
-            SkeletonDCELHalfedge halfedge = null;
+        //    //SkeletonDCELFace face =new_face();
+        //    //SkeletonDCELCbb ccb = new_outer_ccb();
+        //    //SkeletonDCELHalfedge halfedge = null;
 
-            //ccb.set_face(face);
+        //    //ccb.set_face(face);
 
-            //if (buddy_wavefront != null)
-            //{ /* buddy wavefront already set up */
-            //    halfedge = (buddy_wavefront.skeleton_face.outer_ccbs_begin()).opposite();
-            //    assert(halfedge.is_on_outer_ccb());
-            //    assert(halfedge.outer_ccb() == null);
-            //}
-            //else
-            //{
-            //    halfedge = new_edge();
-            //}
-            //halfedge.is_emanating_input_ = true;
-            //halfedge.set_outer_ccb(ccb);
+        //    //if (buddy_wavefront != null)
+        //    //{ /* buddy wavefront already set up */
+        //    //    halfedge = (buddy_wavefront.skeleton_face.outer_ccbs_begin()).opposite();
+        //    //    assert(halfedge.is_on_outer_ccb());
+        //    //    assert(halfedge.outer_ccb() == null);
+        //    //}
+        //    //else
+        //    //{
+        //    //    halfedge = new_edge();
+        //    //}
+        //    //halfedge.is_emanating_input_ = true;
+        //    //halfedge.set_outer_ccb(ccb);
 
-            //face.add_outer_ccb(ccb, halfedge);
-            return face;
-        }
+        //    //face.add_outer_ccb(ccb, halfedge);
+        //    //return face;
+        //}
 
         internal SkeletonDCELCbb new_outer_ccb()
         {
@@ -46,20 +46,27 @@ namespace SurfNet
             return out_ccbs.Last();
         }
 
-        internal SkeletonDCELFace new_face()
+        internal SkeletonDCELFace new_face(SkeletonDCELHalfedge he )
+
         {
+            
             faces.Add(new SkeletonDCELFace());
-            return faces.Last();
+
+            var f =faces.Last();
+            f.Halfedge=he;
+            he.Face = f;    
+            return f;
         }
 
         internal SkeletonDCELHalfedge new_edge()
         {
-           var ha = new SkeletonDCELHalfedge();
+            var ha = new SkeletonDCELHalfedge();
             var hb = new SkeletonDCELHalfedge();
             ha.Opposite = hb;
             hb.Opposite = ha;
             halfedges.Add(ha);
             halfedges.Add(hb);
+
             return ha;
         }
 
@@ -99,86 +106,25 @@ namespace SurfNet
             return new X_monotone_curve();
         }
 
-        internal SkeletonDCELVertex new_vertex()
+
+        internal SkeletonDCELVertex new_vertex(Point2 p , double time)
         {
-            vertices.Add(new SkeletonDCELVertex());
+            vertices.Add(new SkeletonDCELVertex(vertices.Count,p, time,new_edge()));
+            SkeletonDCELVertex.IncId();
             return vertices.Last();
         }
+
+        internal SkeletonDCELVertex new_vertex(int id, Point2 p, double time)
+        {
+         var  v = new SkeletonDCELVertex(id, p, time, new_edge());
+            return v;
+            
+        }
+
 
         internal Point_3 new_point(Point_3 point_3)
         {
             return point_3;
         }
-    }
-
-
-    public class SkeletonDCELFace 
-    {
-        private bool is_beveling_face_;
-        public void set_is_beveling_face(bool is_beveling_face) { is_beveling_face_ = is_beveling_face; }
-        public bool is_beveling_face() { return is_beveling_face_; }
-
-
-
-        public SkeletonDCELFace() { id = (ctr++); }
-        private static int ctr;
-        public int id;
-
-        public SkeletonDCELFace(DcelVertex generator) 
-        {
-        }
-
-        public SkeletonDCELFace(DcelVertex generator, DcelHalfEdge edge) 
-        {
-        }
-
-        internal void add_outer_ccb(SurfNet.SkeletonDCELCbb ccb, SurfNet.SkeletonDCELHalfedge halfedge)
-        {
-        // TODO       throw new NotImplementedException();
-        }
-
-        public  SkeletonDCELHalfedge outer_ccbs_begin()
-        {
-            return null;// throw new NotImplementedException();
-        }
-
-        internal SkeletonDCELHalfedge outer_ccbs_end()
-        {
-            return null;// throw new NotImplementedException();
-        }
-    }
-
-
-    public class SkeletonDCELVertex
-    {
-        public SkeletonDCELVertex() { id = ctr++; }
-        private int ctr;
-        public readonly int id;
-        internal bool has_null_point()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal Point_3 Point()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal Point_3 point()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void set_halfedge(SkeletonDCELHalfedge start)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void set_point(Point_3 pp)
-        {
-            throw new NotImplementedException();
-        }
-
-        
     }
 }

@@ -36,7 +36,7 @@ namespace SurfNet
         public DcelVertex Generator => generator;
 
         /// <summary>
-        /// Gets or sets the face id.
+        /// Gets or sets the face Id.
         /// </summary>
         public int Id
         {

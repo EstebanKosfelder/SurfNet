@@ -1,66 +1,72 @@
 ﻿using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 
 namespace SurfNet
 {
     using static DebugLog;
     using static Mathex;
     using VertexAngle = OrientationEnum;
-    public enum InfiniteSpeedType { NONE, OPPOSING, WEIGHTED };
 
+    public enum InfiniteSpeedType
+    { NONE, OPPOSING, WEIGHTED };
 
     public partial class WavefrontVertex
     {
 
-        
-
-        public Point2 pos_zero;
-        public Point2 pos_start;
-        public WavefrontVertex NextInLAV { get; set; }
-        public WavefrontVertex PrevInLAV { get; set; }
-
-        public double time_start;
-        private WavefrontEdge?[] incident_wavefront_edges;
-        VertexAngle angle;
-        public bool is_initial;
+        public int dbg_orientation = 0;
+        public Vector2 dbg_vector_velocity = new Vector2(0, 0);
+        public InfiniteSpeedType infinite_speed;
         public bool is_beveling;
         public bool is_infinite;
-        public InfiniteSpeedType infinite_speed; /** This wavefront vertex is
-      either between parallel, opposing wavefront elements that have crashed
-      into each other and become collinear, or it is between neighboring
-      wavefront edges that have become collinear yet have different weights. */
+        public bool is_initial;
+        public Point2 pos_zero;
+        // This wavefront vertex is either between parallel, opposing wavefront elements that have crashed
+        // into each other and become collinear, or it is between neighboring
+        // wavefront edges that have become collinear yet have different weights.
         public Vector2 velocity;
-        private Polynomial1D px_, py_;
-        private bool has_stopped_ = false;
-        private double time_stop_;
-        private Point2 pos_stop_;
 
-        private bool is_degenerate_ = false; /* if pos_stop == pos_start */
+        private SkeletonDCELHalfedge _halfedge = null;
+        private VertexAngle angle;
+        private bool has_stopped_ = false;
+        // wavefront vertices form a doubly-linked edge list to represent
+        // the boundary of their left(0) and right(1) incident faces.
+        //
+        // prev points to the wavefront vertex earlier in time, next to
+        // the one later in time, so when traversing a face, care needs
+        // to be taken at each arc (i.e. wavefront-vertex) wrt direction.
+        private WavefrontEdge?[] incident_wavefront_edges;
+
+        private bool is_degenerate_ = false;
+        private WavefrontVertex?[] next_vertex_ = new WavefrontVertex[2];
+        private Point2 pos_stop_;
+        private WavefrontVertex?[] prev_vertex_ = new WavefrontVertex[2];
+        private Polynomial1D px_, py_;
+        // if pos_stop == pos_start 
         private SkeletonDCELHalfedge?[] skeleton_dcel_halfedge_;
 
-        /* wavefront vertices form a doubly-linked edge list to represent
-         * the boundary of their left(0) and right(1) incident faces.
-         *
-         * prev points to the wavefront vertex earlier in time, next to
-         * the one later in time, so when traversing a face, care needs
-         * to be taken at each arc (i.e. wavefront-vertex) wrt direction.
-         */
-        private WavefrontVertex?[] next_vertex_ = new WavefrontVertex[2];
-        private WavefrontVertex?[] prev_vertex_ = new WavefrontVertex[2];
-
-        
+        private double time_stop_;
+        public SkeletonDCELHalfedge Halfedge
+        {
+            get => _halfedge != null ? _halfedge : Vertex.Halfedge;
+            set
+            {
+                _halfedge = value;
+                if (Vertex.Halfedge == null)
+                { Vertex.Halfedge = value; }
+            }
+        }
 
         public int Id { get; private set; }
-
-        private Point2 point_2;
-        public override string ToString()
-        {
-            return $"wv:{Id} ";
-        }
+        public WavefrontVertex NextInLAV { get; set; }
+        public Point2 pos_start => Vertex.Point;
+        public WavefrontVertex PrevInLAV { get; set; }
+        public double time_start => Vertex.Time;
+        public SkeletonDCELVertex Vertex { get; private set; }
         public WavefrontVertex(
                         int id,
                     Point2 p_pos_zero,
-                    Point2 p_pos_start,
-                    double p_time_start,
+                    SkeletonDCELVertex vertex,
                     WavefrontEdge? a = null,
                     WavefrontEdge? b = null,
                     bool p_is_initial = false,
@@ -68,15 +74,13 @@ namespace SurfNet
                     bool p_is_infinite = false)
 
         {
-
-
             Id = id;
 
             pos_zero = (p_pos_zero);
-            pos_start = (p_pos_start);
-            time_start = (p_time_start);
+            Vertex = vertex;
+
             incident_wavefront_edges = new WavefrontEdge?[] { a, b };
-            angle = (a != null && b != null) ? orientation(a.l().l.to_vector(), b.l().l.to_vector()) : OrientationEnum.STRAIGHT;
+            angle = (a != null && b != null) ? orientation(a.l().l.ToVector(), b.l().l.ToVector()) : OrientationEnum.STRAIGHT;
             is_initial = (p_is_initial);
             is_beveling = (p_is_beveling);
             is_infinite = (p_is_infinite);
@@ -88,33 +92,19 @@ namespace SurfNet
             next_vertex_ = new WavefrontVertex?[] { null, null };
             prev_vertex_ = new WavefrontVertex?[] { null, null };
 
-
             // assert(!!a == !!b);
+
+
+
+
         }
 
-        public WavefrontVertex(int idx, Point2 point_2) : this(idx, point_2, point_2, 0, null, null)
-        {
-            this.Id = idx;
-
-        }
-
-
-        /** type of intersections for two lines */
         protected enum LineIntersectionType
         {
             ONE,   /* the two lines intersect in one point */
             ALL,   /* the two lines are parallel and coincide */
             NONE,  /* the two liens are parallel and distinct */
         };
-        //  friend std.ostream& operator<<(std.ostream& os, const WavefrontVertex.LineIntersectionType t);
-
-        protected static partial InfiniteSpeedType get_infinite_speed_type(WavefrontEdge a, WavefrontEdge b, OrientationEnum angle);
-        protected static Intersection compute_intersection(Line2 a, Line2 b)
-        {
-
-
-            return Mathex.intersection(a, b);
-        }
 
         public static Vector2 compute_velocity(
              Point2 pos_zero,
@@ -134,7 +124,7 @@ namespace SurfNet
                 if (lit.Result != Intersection.Intersection_results.POINT)
                 {
                     // CANNOTHAPPEN_MSG << "No point intersection between WavefrontEmittingEdges at offset 1.  Bad.";
-                    Debug.Assert(false);
+                    System.Diagnostics.Debug.Assert(false);
                     throw new Exception("No point intersection between WavefrontEmittingEdges at offset 1.  Bad.");
                 }
                 var intersection = lit.Points[0];
@@ -145,7 +135,7 @@ namespace SurfNet
                 //DBG(DBG_KT) << "a:" << CGAL_vector(a.normal);
                 //DBG(DBG_KT) << "b:" << CGAL_vector(b.normal);
 
-                if (orientation(a.l.to_vector(), b.l.to_vector().perpendicular(OrientationEnum.CLOCKWISE)) == OrientationEnum.RIGHT_TURN)
+                if (orientation(a.l.ToVector(), b.l.ToVector().perpendicular(OrientationEnum.CLOCKWISE)) == OrientationEnum.RIGHT_TURN)
                 {
                     /* They are in the same direction */
                     if (a.normal == b.normal)
@@ -155,7 +145,6 @@ namespace SurfNet
                     else
                     {
                         throw new Exception("collinear incident wavefront edges with different speeds.");
-
                     }
                 }
                 else
@@ -166,21 +155,41 @@ namespace SurfNet
             return result;
         }
 
-        public bool is_reflex_or_straight() { return angle != OrientationEnum.CONVEX; }
-        public bool is_convex_or_straight() { return angle != OrientationEnum.REFLEX; }
-        // public bool is_straight() const { return angle == STRAIGHT; }
-        public bool has_stopped() { return has_stopped_; }
-        public double time_stop() { return time_stop_; }
-        public Point2 pos_stop() { return pos_stop_; }
-
-        //KineticTriangle const * const * triangles() const { return incident_triangles; };
-        public WavefrontEdge[] wavefronts() { return incident_wavefront_edges; }
-
-
-        public Point2 p_at_dbg(double t)
+        public string Debug()
         {
-            if(has_stopped() &&  t >= time_stop_) return pos_stop_;
-             return (Point2)(pos_zero + (Point2)(velocity * t));
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($" kv:{Id:##0} start:{pos_start.Debug()} t:{time_start.Debug(4)} stop: {pos_stop_} t:{time_stop_} ");
+            sb.AppendLine($"    iwe0: {incident_wavefront_edges[0]} iwe1: {incident_wavefront_edges[1]}");
+            //sb.AppendLine($"    he[0]:   {skeleton_dcel_halfedge_[0]}");
+            //sb.AppendLine($"    he[1]:   {skeleton_dcel_halfedge_[1]}");
+            sb.AppendLine($"   f0 prev: {prev_vertex_[0]} next: {next_vertex_[0]}");
+            sb.AppendLine($"   f1 prev: {prev_vertex_[1]} next: {next_vertex_[1]}");
+            return sb.ToString();
+
+
+            return null;
+        }
+
+        // public bool is_straight() const { return angle == STRAIGHT; }
+        public bool has_stopped()
+        { return has_stopped_; }
+
+        public WavefrontEdge incident_wavefront_edge(int i)
+        {
+            assert(i <= 1);
+            return incident_wavefront_edges[i];
+        }
+
+        public bool is_convex_or_straight()
+        { return angle != OrientationEnum.REFLEX; }
+
+        public bool is_reflex_or_straight()
+        { return angle != OrientationEnum.CONVEX; }
+
+        public WavefrontVertex next_vertex(int side)
+        {
+            assert(side <= 1);
+            return next_vertex_[side];
         }
 
         public Point2 p_at(double t)
@@ -190,16 +199,13 @@ namespace SurfNet
             return (Point2)(pos_zero + (Point2)(velocity * t));
         }
 
-        /** return the position of this vertex for drawing purposes.
-         *
-         * If the time to draw is later than the stop position, return
-         * the stop position.
-         *
-         * If the time to draw is prior to the start position, no such
-         * special handling is done and we return the location where
-         * the vertex would have been such that it is at the start position
-         * at the start time given its velocity.
-         */
+        public Point2 p_at_dbg(double t)
+        {
+            if (has_stopped() && t >= time_stop_)
+                return pos_stop_;
+            return (Point2)(pos_zero + (Point2)(velocity * t));
+        }
+
         public Point2 p_at_draw(double t)
         {
             assert(!is_infinite);
@@ -225,6 +231,47 @@ namespace SurfNet
                                    : (pos_zero + (Point2)velocity * t);
         }
 
+        public Point2 pos_stop()
+        { return pos_stop_; }
+
+        public WavefrontVertex prev_vertex(int side)
+        {
+            assert(side <= 1);
+            return prev_vertex_[side];
+        }
+
+        public Polynomial1D px()
+        {
+            assert(!is_infinite);
+            assert(!has_stopped_);
+            return px_;
+        }
+
+        //  std.string Debug() const;
+        public Polynomial1D py()
+        {
+            assert(!is_infinite);
+            assert(!has_stopped_);
+            return py_;
+        }
+
+        public void set_incident_wavefront_edge(int i, WavefrontEdge e)
+        {
+            assert(i <= 1);
+            assert(incident_wavefront_edges[i] != null);
+            assert(e != null);
+            assert(incident_wavefront_edges[i].l() == e.l());
+            incident_wavefront_edges[i] = e;
+        }
+
+        public SkeletonDCELHalfedge skeleton_dcel_halfedge(int i)
+        {
+            assert(i <= 1);
+
+            assert(!is_degenerate());
+            return skeleton_dcel_halfedge_[i];
+        }
+
         public void stop(double t)
         {
             assert(!has_stopped_);
@@ -233,7 +280,7 @@ namespace SurfNet
             pos_stop_ = p_at(t);
             has_stopped_ = true;
 
-            if (pos_stop_ .AreNear(pos_start))
+            if (pos_stop_.AreNear(pos_start))
             {
                 is_degenerate_ = true;
                 assert(time_stop_.AreNear(time_start));
@@ -247,7 +294,7 @@ namespace SurfNet
             time_stop_ = t;
             pos_stop_ = p;
             has_stopped_ = true;
-
+            
             assert(time_stop_.AreNear(time_start));
 
             if (pos_stop_.AreNear(pos_start))
@@ -256,66 +303,26 @@ namespace SurfNet
             };
         }
 
-        public WavefrontEdge incident_wavefront_edge(int i)
-        {
-            assert(i <= 1);
-            return incident_wavefront_edges[i];
-        }
-        public void set_incident_wavefront_edge(int i, WavefrontEdge e)
-        {
-            assert(i <= 1);
-            assert(incident_wavefront_edges[i] != null);
-            assert(e != null);
-            assert(incident_wavefront_edges[i].l() == e.l());
-            incident_wavefront_edges[i] = e;
-        }
+        public double time_stop()
+        { return time_stop_; }
 
-        public WavefrontVertex next_vertex(int side)
+        public override string ToString()
         {
-            assert(side <= 1);
-            return next_vertex_[side];
+            return $"wv:{Id} ";
         }
-        public WavefrontVertex prev_vertex(int side)
-        {
-            assert(side <= 1);
-            return prev_vertex_[side];
-        }
+        //public WavefrontVertex(int idx, Point2 point_2) : this(idx, point_2, point_2, 0, null, null)
+        //{
+        //    this.Id = idx;
+        //}
 
-        /*
-        public
-            friend inline std.ostream& operator<<(std.ostream& os, const WavefrontVertex * const kv) {
-              if (kv) {
-                os << "kv";
-        DEBUG_STMT(os << kv.id);
-        os << (kv.angle == CONVEX ? "c" :
-               kv.angle == REFLEX ? "r" :
-               kv.angle == STRAIGHT ? "=" :
-                                       "XXX-INVALID-ANGLE")
-           << kv.infinite_speed
-           << (kv.has_stopped_ ? "s" : "");
-              } else
-        {
-            os << "kv*";
-        }
-        return os;
-            }
-        */
-        //  std.string details() const;
+        /** type of intersections for two lines */
+        //  friend std.ostream& operator<<(std.ostream& os, const WavefrontVertex.LineIntersectionType t);
 
-        public Polynomial1D px()
-        {
-            assert(!is_infinite);
-            assert(!has_stopped_);
-            return px_;
-        }
-        public Polynomial1D py()
-        {
-            assert(!is_infinite);
-            assert(!has_stopped_);
-            return py_;
-        }
+        //KineticTriangle const * const * triangles() const { return incident_triangles; };
+        public WavefrontEdge[] wavefronts()
+        { return incident_wavefront_edges; }
 
-#if !SURF_NDEBUG
+        [Conditional("DEBUG")]
         internal void assert_valid()
         {
             assert(is_initial || !is_beveling); // !initial => !beveling   <=>  !!initial v !beveling
@@ -332,17 +339,20 @@ namespace SurfNet
                 assert(!has_stopped() ^ next_vertex_[i] != null);
             }
         }
-#else
-void assert_valid() const {};
-#endif
 
-        // ==================== functions maintaining the DCEL =====================
+        internal bool is_degenerate()
+        { return is_degenerate_; }
 
-        /** set the successor in the DCEL
-         *
-         * Also update their prev (or next) pointer depending on whether we have
-         * head_to_tail set to true or not.
-         */
+        internal void link_tail_to_tail(WavefrontVertex other)
+        {
+            assert(prev_vertex_[0] == null);
+            assert(other.prev_vertex_[1] == null);
+            prev_vertex_[0] = other;
+            other.prev_vertex_[1] = this;
+            //DBG(DBG_KT) << " For " << this << " prev_vertex_[0] := " << other;
+            //DBG(DBG_KT) << " For " << other << " prev_vertex_[1] := " << this;
+        }
+
         internal void set_next_vertex(int side, WavefrontVertex next, bool head_to_tail = true)
         {
             assert(side <= 1);
@@ -370,35 +380,17 @@ void assert_valid() const {};
             };
         }
 
-        /** join two wavefront vertices, tail-to-tail.
-         *
-         * This is used after a split event.  Is called at a, where a's left (ccw)
-         * side is towards the split edge, i.e. where prev_vertex[0] is null.
-         *
-         * This is also used to link initial vertices while beveling.  Going
-         * clockwise about a vertex, this is called at each kinetc vertex with
-         * the previous one as an argument.
-         */
-        internal void link_tail_to_tail(WavefrontVertex other)
-        {
-            assert(prev_vertex_[0] == null);
-            assert(other.prev_vertex_[1] == null);
-            prev_vertex_[0] = other;
-            other.prev_vertex_[1] = this;
-            //DBG(DBG_KT) << " For " << this << " prev_vertex_[0] := " << other;
-            //DBG(DBG_KT) << " For " << other << " prev_vertex_[1] := " << this;
-        }
-
-        internal bool is_degenerate() { return is_degenerate_; }
-
-     public   SkeletonDCELHalfedge skeleton_dcel_halfedge(int i)
-        {
-            assert(i <= 1);
-
-            assert(!is_degenerate());
-            return skeleton_dcel_halfedge_[i];
-        }
-
+        /// <summary>
+        /// join two wavefront vertices, tail-to-tail.
+        ///
+        /// This is used after a split event.  Is called at a, where a's left (ccw)
+        /// side is towards the split edge, i.e. where prev_vertex[0] is null.
+        ///
+        /// This is also used to link initial vertices while beveling.  Going
+        /// clockwise about a vertex, this is called at each kinetc vertex with
+        /// the previous one as an argument.
+        ///
+        /// </summary>
         internal void set_skeleton_dcel_halfedge(int i, SkeletonDCELHalfedge he)
         {
             assert(i <= 1);
@@ -406,5 +398,73 @@ void assert_valid() const {};
             assert(!is_degenerate());
             skeleton_dcel_halfedge_[i] = he;
         }
+
+        protected static Intersection compute_intersection(Line2 a, Line2 b)
+        {
+            return Mathex.intersection(a, b);
+        }
+
+        protected static partial InfiniteSpeedType get_infinite_speed_type(WavefrontEdge a, WavefrontEdge b, OrientationEnum angle);
+        /** return the position of this vertex for drawing purposes.
+         *
+         * If the time to draw is later than the stop position, return
+         * the stop position.
+         *
+         * If the time to draw is prior to the start position, no such
+         * special handling is done and we return the location where
+         * the vertex would have been such that it is at the start position
+         * at the start time given its velocity.
+         */
+        /*
+        public
+            friend inline std.ostream& operator<<(std.ostream& os, const WavefrontVertex * const kv) {
+              if (kv) {
+                os << "kv";
+        DEBUG_STMT(os << kv.Id);
+        os << (kv.angle == CONVEX ? "c" :
+               kv.angle == REFLEX ? "r" :
+               kv.angle == STRAIGHT ? "=" :
+                                       "XXX-INVALID-ANGLE")
+           << kv.infinite_speed
+           << (kv.has_stopped_ ? "s" : "");
+              } else
+        {
+            os << "kv*";
+        }
+        return os;
+            }
+        */
+        // ==================== functions maintaining the DCEL =====================
+
+        /** set the successor in the DCEL
+         *
+         * Also update their prev (or next) pointer depending on whether we have
+         * head_to_tail set to true or not.
+         */
+        protected static partial InfiniteSpeedType get_infinite_speed_type(WavefrontEdge a, WavefrontEdge b, OrientationEnum angle)
+        {
+            if (a != null && b != null && angle == (int)OrientationEnum.STRAIGHT)
+            {
+                if (orientation(a.l().l.ToVector(), b.l().l.ToVector().perpendicular(OrientationEnum.CLOCKWISE)) == OrientationEnum.LEFT_TURN)
+                {
+                    return InfiniteSpeedType.OPPOSING;
+                }
+                else if (a.l().weight != b.l().weight)
+                {
+                    return InfiniteSpeedType.WEIGHTED;
+                }
+                else
+                {
+                    assert(a.l().normal == b.l().normal);
+                    return InfiniteSpeedType.NONE;
+                }
+            }
+            else
+            {
+                return InfiniteSpeedType.NONE;
+            }
+        }
+
+        
     }
 }

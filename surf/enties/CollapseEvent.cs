@@ -5,7 +5,7 @@
 
         public override string ToString()
         {
-            return $"kt:{t.Id} {base.ToString()}";
+            return $"kt:{t.Id:##0} {base.ToString()}";
         }
         public KineticTriangle t;
         public CollapseSpec get_priority() => this;
