@@ -42,7 +42,7 @@ skeletonStructure.initialize();
 
 var wp = skeletonStructure.wp;
 
-wp.setup_queue(builder);
+
 
 while (!wp.propagation_complete() && !builder.queue.empty())
 {
