@@ -1,4 +1,5 @@
-﻿namespace SurfNet
+﻿
+namespace SurfNet
 {
     public  class BasicEdge
     {

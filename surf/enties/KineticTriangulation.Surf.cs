@@ -17,6 +17,8 @@ namespace SurfNet
 
     public partial class KineticTriangulation
     {
+        public BasicInput Input { get; internal set; }
+
         public void initialize(BasicInput input, WavefrontEdgeList p_wavefront_edges, int p_restrict_component)
         {
             //   DBG_FUNC_BEGIN(DBG_KT_SETUP);
@@ -29,7 +31,7 @@ namespace SurfNet
 
             foreach (var bv in input.Vertices)
             {
-                var sv = skeleton.new_vertex(bv.p, 0.0);
+                var sv = skeleton.new_vertex(bv.Point, 0.0);
             }
 
 
@@ -56,10 +58,12 @@ namespace SurfNet
 
             
 
-            foreach (var v in vertices)
+            foreach (var bf in input.Vertices)
             {
+                
+                var v = vertices[bf.Id];
                 var sh = skeleton.new_edge();
-                var next_v = vertices[ContourVertices[v.Id].NextInLAV.ID];
+                var next_v = vertices[bf.Halfedge.Next.Vertex.Id];
                 var he_v = v.Halfedge;
                 var he_nv = next_v.Halfedge;
                 sh.Vertex =v.Vertex;
@@ -195,14 +199,14 @@ namespace SurfNet
                         BasicVertex u = input.Vertices[vidxu];
                         BasicVertex v = input.Vertices[vidxv];
 
-                        if (!input.has_edge(vidxu, vidxv))
-                        {
-                            throw new Exception(
-                                $"Cannot find edge for triangulation constraint ({vidxu}, {vidxv}) in input.  Input is not a PSLG." +
-                                $" v{vidxu}:{input.Vertices[vidxu].p}\n v{vidxv}:{input.Vertices[vidxv].p}" +
-                                " Probably one of these points is on the interior of another edge."
-                                );
-                        }
+                    //    if (!input.has_edge(vidxu, vidxv))
+                        //{
+                        //    throw new Exception(
+                        //        $"Cannot find edge for triangulation constraint ({vidxu}, {vidxv}) in input.  Input is not a PSLG." +
+                        //        $" v{vidxu}:{input.Vertices[vidxu].p}\n v{vidxv}:{input.Vertices[vidxv].p}" +
+                        //        " Probably one of these points is on the interior of another edge."
+                        //        );
+                        //}
 
                         ////   DBG(DBG_KT_SETUP) << "at " << t << "/" << i << ": vertices are " << vidxu << " and " << vidxv;
 
@@ -229,7 +233,7 @@ namespace SurfNet
 
                        // SkeletonDCELFace skeleton_dcel_face = skeleton.setup_new_input_edge(null /*buddy_wavefront_edge*/ /* may be NULL and that's OK */);
 
-                        wavefront_edges.Add(new WavefrontEdge(u.p, v.p, /* edge.weight*/ 1, t, null));
+                        wavefront_edges.Add(new WavefrontEdge(u.Point, v.Point, /* edge.weight*/ 1, t, null));
                         w[i] = wavefront_edges.Last();
                     }
                     else
@@ -294,7 +298,7 @@ namespace SurfNet
                     assert(bv.degree < 1);
 
                     // XXX do not make a vertex if this is reflex and the reflex_beveling_add is greater than 1.
-                    WavefrontVertex v = vertices.make_initial_vertex(skeleton, bv.Id, bv.p, l, r, false);
+                    WavefrontVertex v = vertices.make_initial_vertex(skeleton, bv.Id, bv.Point, l, r, false);
 
 
 
@@ -314,12 +318,12 @@ namespace SurfNet
                     assert(r.vertex(0) == v);
                 }
             }
-            foreach (var kv in vertices)
-            {
-                var cv = ContourVertices[kv.Id];
-                kv.NextInLAV = vertices[cv.NextInLAV.ID];
-                kv.PrevInLAV = vertices[cv.PrevInLAV.ID];
-            }
+            //foreach (var kv in vertices)
+            //{
+            //    var cv = ContourVertices[kv.Id];
+            //    kv.NextInLAV = vertices[cv.NextInLAV.ID];
+            //    kv.PrevInLAV = vertices[cv.PrevInLAV.ID];
+            //}
             //DBG_FUNC_END(//DBG_KT_SETUP);
         }
 
@@ -401,7 +405,7 @@ namespace SurfNet
                         
                     }
 
-                    var w = new WavefrontEdge(new WavefrontSupportingLine(l.l().l.Opposite().Perpendicular(bv.p), l.l().weight));
+                    var w = new WavefrontEdge(new WavefrontSupportingLine(l.l().l.Opposite().Perpendicular(bv.Point), l.l().weight));
                     Log($"New wavefront edgew:{w}");
                     wavefront_edges.Add(w);
                     edges.push_back(w);
@@ -433,7 +437,7 @@ namespace SurfNet
             //DBG(DBG_KT_SETUP) << " New wavefront vertices:";
             foreach (var  edge in edges.Skip(1))
             {
-                WavefrontVertex v = vertices.make_initial_vertex(skeleton, bv.Id,bv.p, previous_edge, edge, true);
+                WavefrontVertex v = vertices.make_initial_vertex(skeleton, bv.Id,bv.Point, previous_edge, edge, true);
                 Log($"add {v.Debug()}");
                 if (prev_vertex!=null)
                 {
@@ -493,12 +497,12 @@ namespace SurfNet
                     if (!infinite_ccw_vertex)
                     {
                         Log($"  All nice and finite");
-                        Point2 pos_plus_normal = bv.p + (current_edge).l().normal_direction.perpendicular(OrientationEnum.RIGHT_TURN);
+                        Point2 pos_plus_normal = bv.Point + (current_edge).l().normal_direction.perpendicular(OrientationEnum.RIGHT_TURN);
 
-                        Log($"   p     {bv.p}");
+                        Log($"   p     {bv.Point}");
                         Log($"   p+    {pos_plus_normal}");
                         Log($"   ptccw {pos_t_ccw}");
-                        var orientation = Mathex.orientation(bv.p, pos_plus_normal, pos_t_ccw);
+                        var orientation = Mathex.orientation(bv.Point, pos_plus_normal, pos_t_ccw);
                         // DBG(DBG_KT_SETUP) << "   orientation " << orientation;
                         split_this = (orientation == OrientationEnum.LEFT_TURN);
                     }
@@ -692,7 +696,7 @@ namespace SurfNet
                  */
                 assert(t.Id < triangle_original_vertex_indices.size() / 3); // XXX -- check if this holds
                 BasicVertex bv = get_basic_vertex_from_triangle_vertex_indices(input, triangle_original_vertex_indices, t.Id, i);
-                pos = bv.p;
+                pos = bv.Point;
             }
 
             //DBG_INDENT_DEC();
@@ -708,5 +712,7 @@ namespace SurfNet
                 e.set_initial_vertices();
             }
         }
+
+        
     }
 }

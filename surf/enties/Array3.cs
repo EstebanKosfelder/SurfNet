@@ -142,10 +142,10 @@ namespace SurfNet
         }
     }
 
-    public class HalfEdge3 : Array3<DcelHalfEdge>
-    {
-        public HalfEdge3(params DcelHalfEdge[] values) : base(values)
-        {
-        }
-    }
+    //public class HalfEdge3 : Array3<DcelHalfEdge>
+    //{
+    //    public HalfEdge3(params DcelHalfEdge[] values) : base(values)
+    //    {
+    //    }
+    //}
 }

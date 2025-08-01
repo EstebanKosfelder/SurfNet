@@ -31,7 +31,7 @@
 
         private bool is_dead_ = false;
         private bool is_dying_ = false;
-        public HalfEdge3 Edges = null;
+        //public HalfEdge3 Edges = null;
         public WavefrontVertex3 vertices = new WavefrontVertex3 { };
         public WavefrontEdge3 wavefronts = new WavefrontEdge3 { };
         public KineticTriangle3 neighbors = new KineticTriangle3 { };

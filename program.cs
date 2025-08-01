@@ -27,13 +27,13 @@ DebugLog.SendMessage = (s) =>
  
 };
 
-// var polys = KineticTriangulation.CargarListaVector2("F:\\trabajos\\g_test.json");
-var polys = KineticTriangulation.CargarListaVector2("F:\\trabajos\\p_test.json");
+ var polys = KineticTriangulation.CargarListaVector2("D:\\Documents\\Trabajos\\test1.json");
+//var polys = KineticTriangulation.CargarListaVector2("D:\\Documents\\Trabajos\\g2.json");
 
 foreach (var poly in polys)
 {
 
-    builder.EnterContour(poly.Select(p => new Point2(p.X, p.Y)));
+    builder.EnterContour(poly.Select(p => new Point2(Math.Round(p.X,3), Math.Round(p.Y))));
 }
 
 

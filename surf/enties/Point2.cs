@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -12,7 +13,7 @@ namespace SurfNet
 
     using static Mathex;
     using static DebugLog;
-    public struct Point2
+    public struct Point2:IComparable<Point2>  ,IComparer<Point2>
     {
 
 
@@ -170,6 +171,16 @@ namespace SurfNet
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public FT y() => Y;
+
+        public int Compare(Point2 x, Point2 y)
+        {
+           return x.CompareXY(y, Mathex.EPS);
+        }
+
+        public int CompareTo(Point2 other)
+        {
+            return this.CompareXY(other, Mathex.EPS);
+        }
     }
 
 

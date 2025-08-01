@@ -7,18 +7,11 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="surf\enties\BasicTriangulation.cs" />
-    <Compile Remove="surf\enties\DCELBase.cs" />
-  </ItemGroup>
+ 
 
   <ItemGroup>
-    <None Include="surf\enties\BasicDCEL\BasicTriangulation.cs" />
-    <None Include="surf\enties\DCELBase.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Esteban\Documents\CNC\Godot\libs\Triangle\Triangle.csproj" />
+    <ProjectReference Include="..\..\PolyBool.Net\Polybool.Net\Polybool.Net.csproj" />
+    <ProjectReference Include="D:\Documents\CNC\Godot\libs\Triangle\Triangle.csproj" />
   </ItemGroup>
 
 </Project>

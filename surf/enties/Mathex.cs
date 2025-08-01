@@ -10,7 +10,7 @@
 
     public static partial class Mathex
     {
-        public const FT EPS = 1e-9;
+        public const FT EPS = 1e-8;
         public const FT EPS2 = EPS * EPS;
         public static FT PI => Math.PI;
 
@@ -27,6 +27,14 @@
 
         public const double FASTER_EDGE_WINS_IN_COLLINEAR_CASES = 1.0;
 
+
+        public static double TriangleArea ( params Point2[] vertices)
+        {
+            
+               // var vertices = Vertices.Select(e => e.PointAt(time)).ToArray();
+                return (vertices[1].X - vertices[0].X) * (vertices[2].Y - vertices[0].Y) - (vertices[1].Y - vertices[0].Y) * (vertices[2].X - vertices[0].X);
+            
+        }
 
 
         public static bool are_near(FT a, FT b, FT eps = EPS)
@@ -419,14 +427,14 @@
             return Math.Sign(a);
         }
 
-        //    (OrientationEnum)sign_of_determinant(q.X - p.X, q.Y - p.Y, r.X - p.X, r.Y - p.Y);
+        //    (OrientationEnum)sign_of_determinant(q.X - vertices.X, q.Y - vertices.Y, r.X - vertices.X, r.Y - vertices.Y);
         public static void Postcondition(bool v)
         {
             if (!v)
                 throw new Exception(); ;
         }
 
-        //public static OrientationEnum orientation(in Point2 p, in Point2 q, in Point2 r) =>
+        //public static OrientationEnum orientation(in Point2 vertices, in Point2 q, in Point2 r) =>
         public static void Precondition_msg(bool v1, string v2)
         {
             Assert(v1, v2);
@@ -1123,8 +1131,8 @@
                      FT ssx, FT ssy,
                      FT stx, FT sty)
         {
-            // compares the y-coordinates of p and the vertical projection of p on s.
-            // Precondition : p is in the x-range of s.
+            // compares the y-coordinates of vertices and the vertical projection of vertices on s.
+            // Precondition : vertices is in the x-range of s.
 
             CGAL_kernel_precondition(are_ordered(ssx, px, stx));
 
@@ -1149,8 +1157,8 @@
                           FT s2sx, FT s2sy,
                           FT s2tx, FT s2ty)
         {
-            // compares the y-coordinates of the vertical projections of p on s1 and s2
-            // Precondition : p is in the x-range of s1 and s2.
+            // compares the y-coordinates of the vertical projections of vertices on s1 and s2
+            // Precondition : vertices is in the x-range of s1 and s2.
             // - if one or two segments are vertical :
             //   - if the segments intersect, return 0
             //   - if not, return the obvious -1/1.
@@ -1399,7 +1407,7 @@
             if (qx < px) return !(qx < rx);
             if (py < qy) return !(ry < qy);
             if (qy < py) return !(qy < ry);
-            return true; // p==q
+            return true; // vertices==q
         }
 
         public static bool collinear_are_strictly_ordered_along_line(FT px, FT py, FT qx, FT qy, FT rx, FT ry)
@@ -1421,7 +1429,7 @@
             //                         qx, qy, qx*qx + qy*qy, 1,
             //                         rx, ry, rx*rx + ry*ry, 1,
             //                         tx, ty, tx*tx + ty*ty, 1);
-            // We first translate so that p is the new origin.
+            // We first translate so that vertices is the new origin.
             FT qpx = qx - px;
             FT qpy = qy - py;
             FT rpx = rx - px;
@@ -1546,7 +1554,7 @@
                                  FT qx, FT qy, FT qwt,
                                  FT rx, FT ry)
         {
-            // returns -1 if r is closer to p w.r.t. the power metric
+            // returns -1 if r is closer to vertices w.r.t. the power metric
             FT d1 = square(rx - px) + square(ry - py) - pwt;
             FT d2 = square(rx - qx) + square(ry - qy) - qwt;
             return compare(d1, d2);

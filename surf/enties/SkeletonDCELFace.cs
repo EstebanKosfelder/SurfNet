@@ -16,13 +16,13 @@ namespace SurfNet
 
         public SkeletonDCELHalfedge Halfedge { get; set; }
 
-        public SkeletonDCELFace(DcelVertex generator) 
-        {
-        }
+        //public SkeletonDCELFace(DcelVertex generator) 
+        //{
+        //}
 
-        public SkeletonDCELFace(DcelVertex generator, DcelHalfEdge edge) 
-        {
-        }
+        //public SkeletonDCELFace(DcelVertex generator, DcelHalfEdge edge) 
+        //{
+        //}
 
         internal void add_outer_ccb(SurfNet.SkeletonDCELCbb ccb, SurfNet.SkeletonDCELHalfedge halfedge)
         {

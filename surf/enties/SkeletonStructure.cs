@@ -1,5 +1,6 @@
 ﻿namespace SurfNet
 {
+    using System.Security.Cryptography.X509Certificates;
     using TriangleNet;
     using static DebugLog;
 
@@ -18,8 +19,11 @@
         {
             input = input_;
             wavefront_edges = new WavefrontEdgeList();
+            
             kt = new KineticTriangulation();
+            kt.Input = input_; 
             wp = new WavefrontPropagator(this);
+            
         }
 
         /** copy vertices and edges from a Boost Graph. */
@@ -29,9 +33,10 @@
             if (input == null)
             {
                 input = new BasicInput();
-                kt.Trangulate(input);
+                kt.CreateContour(input);
+                input = kt.Trangulate(input);
             }
-          
+
 
             kt.initialize(input, wavefront_edges, restrict_component);
             assert(kt.triangles_size() > 0);

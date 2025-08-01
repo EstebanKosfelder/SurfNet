@@ -58,9 +58,9 @@ namespace SurfNet
         }
 
         public int Id { get; private set; }
-        public WavefrontVertex NextInLAV { get; set; }
+       
         public Point2 pos_start => Vertex.Point;
-        public WavefrontVertex PrevInLAV { get; set; }
+       
         public double time_start => Vertex.Time;
         public SkeletonDCELVertex Vertex { get; private set; }
         public WavefrontVertex(

@@ -29,15 +29,15 @@
 
 
 
-        /** create a new kinetic vertex during the propagation period.
-         *  link the vertex to its ancestors on the wavefront sides
-         *  that are still propagating.
-         *
-         *  Linking the predecessors on the no-longer-propagating side
-         *  is the responsibility of the caller, as it's not clear
-         *  how they should be linked.  (together in the case of
-         *  a constraint collapse, but not necessarily in spoke collapses.)
-         */
+         // create a new kinetic vertex during the propagation period.
+         //  link the vertex to its ancestors on the wavefront sides
+         //  that are still propagating.
+         //
+         //  Linking the predecessors on the no-longer-propagating side
+         //  is the responsibility of the caller, as it's not clear
+         //  how they should be linked.  (together in the case of
+         //  a constraint collapse, but not necessarily in spoke collapses.)
+         
         public WavefrontVertex make_vertex(
             SkeletonDCEL skeleton,
           Point2 pos,

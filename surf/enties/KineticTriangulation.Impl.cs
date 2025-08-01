@@ -13,20 +13,20 @@
         public int mod3(int i) => i.mod3();
 
 
-        internal partial int get_num_initial_triangles(DcelMesh mesh)
-        {
-            int num_initial_triangles;
-            //if (restrict_component_ < 0) {
-            //    num_initial_triangles = ct.tds().number_of_faces();
-            //} else {
-            num_initial_triangles = 0;
-            foreach (var fit in mesh.Faces)
-            {
-                num_initial_triangles += 1;// (fit.info().component == restrict_component_);
-            }
-            //}
-            return num_initial_triangles;
-        }
+        //internal partial int get_num_initial_triangles(DcelMesh mesh)
+        //{
+        //    int num_initial_triangles;
+        //    //if (restrict_component_ < 0) {
+        //    //    num_initial_triangles = ct.tds().number_of_faces();
+        //    //} else {
+        //    num_initial_triangles = 0;
+        //    foreach (var fit in mesh.Faces)
+        //    {
+        //        num_initial_triangles += 1;// (fit.info().component == restrict_component_);
+        //    }
+        //    //}
+        //    return num_initial_triangles;
+        //}
 
         ///** initialize the TDS, the Triangulation Data Structure
         // *

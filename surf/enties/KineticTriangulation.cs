@@ -197,7 +197,7 @@ namespace SurfNet
             int i);
 
 
-        internal partial int get_num_initial_triangles(DcelMesh mesh);
+    //    internal partial int get_num_initial_triangles(DcelMesh mesh);
 
         //private partial void initialize_tds(DcelMesh mesh);
 
@@ -397,7 +397,7 @@ namespace SurfNet
                 {
                     assert(!he0.vertex().has_null_point());
                     assert(!he1.vertex().has_null_point());
-                    p = skeleton.new_segment(new Segment_3(he0.vertex().Point(), he1.vertex().Point()));
+                    p = skeleton.new_segment(new Segment_3(he0.vertex().Vertex(), he1.vertex().Vertex()));
                 }
                 else
                 {
@@ -1078,24 +1078,13 @@ namespace SurfNet
                 }
             }
 
-            bool equals = true;
+            
             for (int i = 0; i < 3; ++i)
             {
-                assert(t.vertices[i].pos_stop().AreNear(t.vertices[i.ccw()].pos_stop()));
-                equals = equals && t.vertices[i].pos_stop().AreNear(t.vertices[i.ccw()].pos_stop());
-                if(!equals)
-                {
-
-                }
+                assert(t.vertices[i].pos_stop().AreNear(t.vertices[i.ccw()].pos_stop()), $"t {t.Id} v[{i}]:{t.vertices[i].Id} v[{i.ccw()}]:{t.vertices[i.ccw()].Id} not near diff:{t.vertices[i].pos_stop()-t.vertices[i.ccw()].pos_stop()} ");
+               
             }
-            if ( equals)
-            {
-
-            }
-            else
-            {
-                throw new Exception();
-            }
+            
 
 
             var vcenter = skeleton.new_vertex(-t.vertices[0].Id, t.vertices[0].pos_stop(), t.vertices[0].time_stop());

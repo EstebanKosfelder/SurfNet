@@ -1,7 +1,10 @@
-﻿using TriangleNet;
+﻿
+using SurfNetPolyBool;
+using System.Data;
+using TriangleNet;
 using TriangleNet.Geometry;
 using TriangleNet.Meshing;
-using TriangleNet.Topology;
+
 
 
 namespace SurfNet
@@ -110,18 +113,49 @@ namespace SurfNet
             {
                 curr.AngleType= GetAngleType( curr.PrevInLAV.Point,curr.Point,curr.NextInLAV.Point);
             }
-            
-
-
-
-            //  SetVertexTriedge(lPrevVertex, new Triedge(lPrevCCWBorder, lFirstCCWBorder));
-
-
-
+     
         }
 
+        public void CreateContour(BasicInput input)
+        {
+            foreach (var poly in Polygons)
+            {
+                input.CreateContourBasicHalfedges(poly.Vertices(ContourVertices).Select(p => p.Point), poly.Hole);
+            }
+          
+            foreach (var f in input.Polygons)
+            {
+                Log($"{f}");
+                foreach (var h in f.Halfedge.Circulation())
+                {
+                    Log($"    {h}");
+                }
 
-        public Mesh Triangulate()
+                Log("Outside Halfedges:");
+                foreach (var h in f.Halfedge.Circulation().FirstOrDefault(h=>h.Opposite.IsOutside )?.Opposite.Circulation())
+                {
+                    Log($"    {h}");
+                }
+            }
+
+            // Reemplaza la línea problemática por esta:
+            List<BasicVertex> l = input.Vertices
+                .OrderBy(v => v.Point.X)
+                .ThenBy(v => v.Point.Y)
+                .ThenBy(v => v.Id)
+                .ToList();
+
+
+            for (var i = 1; i < l.Count; i++)
+            {
+                if (l[i].Point.X == l[i - 1].Point.X && l[i].Point.Y == l[i - 1].Point.Y)
+                {
+                    l[i].OriginalId = l[i - 1].OriginalId;
+
+                }
+            }
+        }
+        public Mesh _Triangulate()
         {
             var polygons = new TriangleNet.Geometry.Polygon();
 
@@ -129,7 +163,7 @@ namespace SurfNet
             {
                 TriangleNet.Geometry.Vertex toVector(SurfNet.Point2 v, int i) => new TriangleNet.Geometry.Vertex(v.X, v.Y, i);
                 Contour pts = new Contour(polygon.Vertices(this.ContourVertices)
-                                                .Select((p, i) => toVector(p.Point, i + polygon.StartIndex)), polygon.ID);
+                                                .Select((p, i) => toVector(p.Point, i + polygon.StartIndex)),-polygon.ID);
                 bool hole = polygon.Hole == true;
                 polygons.Add(pts, hole);
             }
@@ -143,6 +177,39 @@ namespace SurfNet
             Mesh mesh = (Mesh)polygons.Triangulate(options, quality);
 
             return mesh;
+        }
+        public ( Mesh,Dictionary<(int start, int end), BasicHalfedge>) Triangulate(BasicInput input)
+        {
+            var polygons = new TriangleNet.Geometry.Polygon();
+            var contraintHalfedges = new Dictionary<(int start, int end), BasicHalfedge>();
+            foreach (var polygon in input.Polygons)
+            {
+         
+                foreach (var he in polygon.Halfedge.Circulation() )
+                {
+                    if (!contraintHalfedges.TryAdd((he.Vertex.PointId, he.Opposite.Vertex.PointId), he))
+                    {
+                        Warning($"{he} is equal {contraintHalfedges[(he.Vertex.PointId, he.Opposite.Vertex.PointId)]} ");
+                    }
+                }
+
+                TriangleNet.Geometry.Vertex toVector(SurfNet.Point2 v, int i) => new TriangleNet.Geometry.Vertex(v.X, v.Y, i);
+                
+
+                Contour pts = new Contour(polygon.Halfedge.Circulation().Select(v => toVector(v.Vertex.Point, v.Vertex.PointId+1)));
+                //bool hole = polygon.Hole == true;
+                polygons.Add(pts, polygon.IsHole);
+            }
+
+            var options = new ConstraintOptions() { Convex = false };
+
+            var quality = new QualityOptions() { };
+
+            // Generate mesh using the polygons Triangulate extension method.
+
+            Mesh mesh = (Mesh)polygons.Triangulate(options, quality);
+
+            return (mesh , contraintHalfedges);
         }
 
         private class TrianglesOnEdge
@@ -159,211 +226,211 @@ namespace SurfNet
 
         }
         
-        public void BuildKineticTriangles(IMesh mesh)
-        {
+        //public void BuildKineticTriangles(IMesh mesh)
+        //{
 
 
 
-            IEnumerable<(int a, int b)[]> EnumerateTriangules(IMesh mesh)
-            {
-                Otri tri = default;
-                Otri neighbor = default;
-                Osub sub = default;
+        //    IEnumerable<(int a, int b)[]> EnumerateTriangules(IMesh mesh)
+        //    {
+        //        Otri tri = default;
+        //        Otri neighbor = default;
+        //        Osub sub = default;
 
-                TriangleNet.Geometry.Vertex p1, p2;
+        //        TriangleNet.Geometry.Vertex p1, p2;
 
-                int ii = 0;
-                foreach (var t in mesh.Triangles)
-                {
-                    ii++;
-                    tri.tri = t;
-                    tri.orient = 0;
+        //        int ii = 0;
+        //        foreach (var t in mesh.Triangles)
+        //        {
+        //            ii++;
+        //            tri.tri = t;
+        //            tri.orient = 0;
                   
-                    (int a, int b)[] segments = new (int a, int b)[3];
-                    for (int i = 0; i < 3; i++)
-                    {
-                        tri.Sym(ref neighbor);
+        //            (int a, int b)[] segments = new (int a, int b)[3];
+        //            for (int i = 0; i < 3; i++)
+        //            {
+        //                tri.Sym(ref neighbor);
 
-                        int nid = neighbor.tri.id;
+        //                int nid = neighbor.tri.id;
 
-                        if (true/* (nid != -1)*/)
-                        {
-                            var backColor = Console.ForegroundColor;
-                            if ((nid == -1))
-                            {
-                                Console.ForegroundColor = ConsoleColor.Blue;
-                            }
-                            else if ((tri.tri.id >= nid))
-                            {
-                                Console.ForegroundColor = ConsoleColor.Yellow;
-                            }
-                            p1 = tri.Org();
-                            p2 = tri.Dest();
+        //                if (true/* (nid != -1)*/)
+        //                {
+        //                    var backColor = Console.ForegroundColor;
+        //                    if ((nid == -1))
+        //                    {
+        //                        Console.ForegroundColor = ConsoleColor.Blue;
+        //                    }
+        //                    else if ((tri.tri.id >= nid))
+        //                    {
+        //                        Console.ForegroundColor = ConsoleColor.Yellow;
+        //                    }
+        //                    p1 = tri.Org();
+        //                    p2 = tri.Dest();
 
-                            tri.Pivot(ref sub);
-
-
-                            segments[i] = (p1.ID, p2.ID);
+        //                    tri.Pivot(ref sub);
 
 
+        //                    segments[i] = (p1.ID, p2.ID);
 
-                            Console.ForegroundColor = backColor;
-                        }
 
-                        tri.orient++;
-                    }
+
+        //                    Console.ForegroundColor = backColor;
+        //                }
+
+        //                tri.orient++;
+        //            }
                   
-                    yield return segments;
-                }
-            }
+        //            yield return segments;
+        //        }
+        //    }
 
 
 
        
 
-            this.triangles = new List<KineticTriangle>(mesh.Triangles.Count);
+        //    this.triangles = new List<KineticTriangle>(mesh.Triangles.Count);
 
 
-            Dictionary<(int a, int b), TrianglesOnEdge> kineticHalfedges = new Dictionary<(int a, int b), TrianglesOnEdge>();
+        //    Dictionary<(int a, int b), TrianglesOnEdge> kineticHalfedges = new Dictionary<(int a, int b), TrianglesOnEdge>();
 
-            var tt = mesh.Triangles.Where(t => t.GetHashCode() >= 0);
-
-
-
-            bool assign_wavefrontedge(KineticTriangle t, int idx, int a, int b, WavefrontEdge?[] wavefrontEdges)
-            {
-                assert(a < vertices.Count);
-
-                var wavefront_edge = this.wavefront_edges[a];
-                assert(wavefront_edge != null);
-
-                assert(wavefront_edge.initial_vertex(0).Id == a);
-                if (wavefront_edge.initial_vertex(1).Id == b)
-                {
-                    wavefrontEdges[TriangulationUtils.cw(idx)] = wavefront_edge;
-
-                    return true;
-                }
-                else
-                {
-                    bool oposite = false;
-                    if (a > b)
-                    {
-                        oposite = true;
-
-                        (a, b) = (b, a);
-                    }
-
-                    TrianglesOnEdge value;
-                    if (!kineticHalfedges.TryGetValue((a, b), out value))
-                    {
-                        value = new TrianglesOnEdge();
-                        kineticHalfedges.Add((a, b), value);
-                    }
-
-                    if (!oposite)
-                    {
-                        assert(value.T == null);
-                        value.T = t;
-                    }
-                    else
-                    {
-                        assert(value.N == null);
-                        value.N = t;
-                    }
-                    return false;
-                }
+        //    var tt = mesh.Triangles.Where(t => t.GetHashCode() >= 0);
 
 
 
+        //    bool assign_wavefrontedge(KineticTriangle t, int idx, int a, int b, WavefrontEdge?[] wavefrontEdges)
+        //    {
+        //        assert(a < vertices.Count);
 
-            }
+        //        var wavefront_edge = this.wavefront_edges[a];
+        //        assert(wavefront_edge != null);
 
-            void assign_neighbors(KineticTriangle t, int idx, int a, int b, KineticTriangle?[] neighbors)
-            {
-                assert(a < vertices.Count);
+        //        assert(wavefront_edge.initial_vertex(0).Id == a);
+        //        if (wavefront_edge.initial_vertex(1).Id == b)
+        //        {
+        //            wavefrontEdges[TriangulationUtils.cw(idx)] = wavefront_edge;
 
-                if (t.wavefronts[idx] == null)
-                {
-                    bool oposite = false;
+        //            return true;
+        //        }
+        //        else
+        //        {
+        //            bool oposite = false;
+        //            if (a > b)
+        //            {
+        //                oposite = true;
 
-                    if (a > b)
-                    {
-                        oposite = true;
+        //                (a, b) = (b, a);
+        //            }
 
-                        (a, b) = (b, a);
-                    }
+        //            TrianglesOnEdge value;
+        //            if (!kineticHalfedges.TryGetValue((a, b), out value))
+        //            {
+        //                value = new TrianglesOnEdge();
+        //                kineticHalfedges.Add((a, b), value);
+        //            }
 
-                    TrianglesOnEdge value;
-                    if (!kineticHalfedges.TryGetValue((a, b), out value))
-                    {
-                        throw new Exception("Esto no deberia pasar");
-                    }
-
-                    if (oposite)
-                    {
-
-                        assert(value.T != null);
-                        assert(value.T != t);
-                        assert(value.N == t);
-                        neighbors[idx] = value.T;
-                    }
-                    else
-                    {
-                        assert(value.N != null);
-                        assert(value.N != t);
-                        assert(value.T == t);
-                        neighbors[idx] = value.N;
-                    }
-
-                }
+        //            if (!oposite)
+        //            {
+        //                assert(value.T == null);
+        //                value.T = t;
+        //            }
+        //            else
+        //            {
+        //                assert(value.N == null);
+        //                value.N = t;
+        //            }
+        //            return false;
+        //        }
 
 
 
 
-            }
+        //    }
+
+        //    void assign_neighbors(KineticTriangle t, int idx, int a, int b, KineticTriangle?[] neighbors)
+        //    {
+        //        assert(a < vertices.Count);
+
+        //        if (t.wavefronts[idx] == null)
+        //        {
+        //            bool oposite = false;
+
+        //            if (a > b)
+        //            {
+        //                oposite = true;
+
+        //                (a, b) = (b, a);
+        //            }
+
+        //            TrianglesOnEdge value;
+        //            if (!kineticHalfedges.TryGetValue((a, b), out value))
+        //            {
+        //                throw new Exception("Esto no deberia pasar");
+        //            }
+
+        //            if (oposite)
+        //            {
+
+        //                assert(value.T != null);
+        //                assert(value.T != t);
+        //                assert(value.N == t);
+        //                neighbors[idx] = value.T;
+        //            }
+        //            else
+        //            {
+        //                assert(value.N != null);
+        //                assert(value.N != t);
+        //                assert(value.T == t);
+        //                neighbors[idx] = value.N;
+        //            }
+
+        //        }
 
 
-            foreach (var tri in EnumerateTriangules(mesh))
-            {
-                var t = new KineticTriangle(triangles.Count, 0, null);
-                var a = tri[0].a;
-                var b = tri[1].a;
-                var c = tri[2].a;
 
-                var wavefrontedges = new WavefrontEdge?[3];
-                t.set_vertex(0, vertices[a]);
-                t.set_vertex(1, vertices[b]);
-                t.set_vertex(2, vertices[c]);
 
-                assign_wavefrontedge(t, 0, a, b, wavefrontedges);
-                assign_wavefrontedge(t, 1, b, c, wavefrontedges);
-                assign_wavefrontedge(t, 2, c, a, wavefrontedges);
+        //    }
 
-                t.set_wavefronts(wavefrontedges[0], wavefrontedges[1], wavefrontedges[2]);
-                foreach (var we in wavefrontedges)
-                {
-                    if (we != null)
-                    {
-                        we.set_initial_incident_triangle(t);
-                    }
-                }
 
-                triangles.Add(t);
+        //    foreach (var tri in EnumerateTriangules(mesh))
+        //    {
+        //        var t = new KineticTriangle(triangles.Count, 0, null);
+        //        var a = tri[0].a;
+        //        var b = tri[1].a;
+        //        var c = tri[2].a;
 
-            }
+        //        var wavefrontedges = new WavefrontEdge?[3];
+        //        t.set_vertex(0, vertices[a]);
+        //        t.set_vertex(1, vertices[b]);
+        //        t.set_vertex(2, vertices[c]);
 
-            foreach (var t in triangles)
-            {
+        //        assign_wavefrontedge(t, 0, a, b, wavefrontedges);
+        //        assign_wavefrontedge(t, 1, b, c, wavefrontedges);
+        //        assign_wavefrontedge(t, 2, c, a, wavefrontedges);
 
-                var neighbors = new KineticTriangle?[3];
-                assign_neighbors(t, 0, t.vertex(1).Id, t.vertex(2).Id, neighbors);
-                assign_neighbors(t, 1, t.vertex(2).Id, t.vertex(0).Id, neighbors);
-                assign_neighbors(t, 2, t.vertex(0).Id, t.vertex(1).Id, neighbors);
-                t.set_neighbors(neighbors);
-            }
+        //        t.set_wavefronts(wavefrontedges[0], wavefrontedges[1], wavefrontedges[2]);
+        //        foreach (var we in wavefrontedges)
+        //        {
+        //            if (we != null)
+        //            {
+        //                we.set_initial_incident_triangle(t);
+        //            }
+        //        }
 
-        }
+        //        triangles.Add(t);
+
+        //    }
+
+        //    foreach (var t in triangles)
+        //    {
+
+        //        var neighbors = new KineticTriangle?[3];
+        //        assign_neighbors(t, 0, t.vertex(1).Id, t.vertex(2).Id, neighbors);
+        //        assign_neighbors(t, 1, t.vertex(2).Id, t.vertex(0).Id, neighbors);
+        //        assign_neighbors(t, 2, t.vertex(0).Id, t.vertex(1).Id, neighbors);
+        //        t.set_neighbors(neighbors);
+        //    }
+
+        //}
 
         public List<ContourVertex> ContourVertices { get; set; } = new List<ContourVertex>();
 
@@ -371,61 +438,68 @@ namespace SurfNet
         public Point2 TopLeft { get; private set; }
         public Point2 BottomRight { get; private set; }
 
-
-      public void Trangulate(BasicInput input)
+        public BasicInput newInput;
+      public BasicInput Trangulate(BasicInput input)
         {
-            input.Triangulate(Triangulate(), ContourVertices);
+           ( var mesh ,var constraints) = Triangulate(input);
+           
+            input.Inicializar(mesh, constraints);
+       
+
+            return input;
         }
-        public void Initialize()
-        {
-            foreach (var cv in ContourVertices)
-            {
+        //public void Initialize()
+        //{
+        //    foreach (var cv in ContourVertices)
+        //    {
             
-                var wavefront_edge = new WavefrontEdge(cv.Point, cv.NextInLAV.Point, 1, null, null);
-                //assert(wavefront_edge.Id == cv.ID);
-                wavefront_edges.Add(wavefront_edge);
-            }
-            foreach (var cv in ContourVertices)
-            {
-                var left = wavefront_edges[cv.PrevInLAV.ID];
-                var right = wavefront_edges[cv.ID];
+        //        var wavefront_edge = new WavefrontEdge(cv.Point, cv.NextInLAV.Point, 1, null, null);
+        //        //assert(wavefront_edge.Id == cv.ID);
+        //        wavefront_edges.Add(wavefront_edge);
+        //    }
+        //    foreach (var cv in ContourVertices)
+        //    {
+        //        var left = wavefront_edges[cv.PrevInLAV.ID];
+        //        var right = wavefront_edges[cv.ID];
 
 
-                vertices.make_initial_vertex(skeleton, cv.ID, cv.Point, left, right, true);
-                assert(vertices.Last().Id == cv.ID);
+        //        vertices.make_initial_vertex(skeleton, cv.ID, cv.Point, left, right, true);
+        //        assert(vertices.Last().Id == cv.ID);
 
-            }
-            foreach (var cv in ContourVertices)
-            {
+        //    }
+        //    foreach (var cv in ContourVertices)
+        //    {
                
 
-                var wavefront_edge = this.wavefront_edges[cv.ID];
+        //        var wavefront_edge = this.wavefront_edges[cv.ID];
 
-                wavefront_edge.set_wavefrontedge_vertex(0, this.vertices[cv.ID]);
-                wavefront_edge.set_wavefrontedge_vertex(1, this.vertices[cv.NextInLAV.ID]);
-                wavefront_edge.set_initial_vertices();
-            }
-            var mesh = Triangulate();
-            BuildKineticTriangles(mesh);
-           // BasicInput.Triangulate(mesh,ContourVertices );
+        //        wavefront_edge.set_wavefrontedge_vertex(0, this.vertices[cv.ID]);
+        //        wavefront_edge.set_wavefrontedge_vertex(1, this.vertices[cv.NextInLAV.ID]);
+        //        wavefront_edge.set_initial_vertices();
+        //    }
+        //    var mesh = _Triangulate();
+        //    BuildKineticTriangles(mesh);
+        //   // BasicInput.Triangulate(mesh,ContourVertices );
 
-            //foreach(var t in triangles)
-            //{
-            //    var bt = BasicInput.Triangles[t.Id];
-            //    assert(bt != null);
-            //    for(int i = 0; i < 3; i++)
-            //    {
-            //        assert((bt.Vertices[i] == null && t.vertex(i) == null) || bt.Vertices[i]?.Id == t.vertex(i)?.Id);
-            //        assert((bt.Neighbors[i] ==null && t.neighbor(i)==null)||  bt.Neighbors[i]?.Id == t.neighbor(i)?.Id );
+        //    //foreach(var t in triangles)
+        //    //{
+        //    //    var bt = BasicInput.Triangles[t.Id];
+        //    //    assert(bt != null);
+        //    //    for(int i = 0; i < 3; i++)
+        //    //    {
+        //    //        assert((bt.Vertices[i] == null && t.vertex(i) == null) || bt.Vertices[i]?.Id == t.vertex(i)?.Id);
+        //    //        assert((bt.Neighbors[i] ==null && t.neighbor(i)==null)||  bt.Neighbors[i]?.Id == t.neighbor(i)?.Id );
 
-            //    }
-            //}
+        //    //    }
+        //    //}
 
 
-            tidx_in_check_refinement = new bool[triangles.Count];
-            assert_valid(0, CORE_ZERO);
-            initialized = true;
-        }
+        //    tidx_in_check_refinement = new bool[triangles.Count];
+        //    assert_valid(0, CORE_ZERO);
+        //    initialized = true;
+        //}
+
+
 
 
 
@@ -585,7 +659,7 @@ namespace SurfNet
 
 
         //    WavefrontVertices.Capacity = ContourVertices.Count();
-        //    WavefrontVertices.AddRange(ContourVertices.Select((cv, idx) => new WavefrontVertex(idx, new Point2(cv.Point.X, cv.Point.Y))));
+        //    WavefrontVertices.AddRange(ContourVertices.Select((cv, idx) => new WavefrontVertex(idx, new Point2(cv.Vertex.X, cv.Vertex.Y))));
 
 
         //    foreach (var kv in WavefrontVertices)
